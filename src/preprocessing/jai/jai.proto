@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message JAIImage {
+  bytes image_data = 1;             // Raw image data as bytes
+  uint32 width = 2;                 // Width of the image
+  uint32 height = 3;               // Height of the image
+  double frame_rate = 4;           // Frame rate
+  uint64 blockid = 5;              // Block ID
+  uint64 bandwidth = 6;            // Bandwidth
+  uint64 timestamp=7;             // timestamp of image
+}
