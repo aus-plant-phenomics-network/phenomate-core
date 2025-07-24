@@ -5,8 +5,6 @@ Also as the data is packed in Mono12p format,
 it unpacks the data to 16-bit unsigned integer format.
 """
 from __future__ import annotations
-import os
-from re import I
 import time
 import csv
 import struct

@@ -89,6 +89,7 @@ dependencies = [
     { name = "opencv-python" },
     { name = "pillow" },
     { name = "protobuf" },
+    { name = "pyturbojpeg" },
     { name = "spectral" },
 ]
 
@@ -99,6 +100,7 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=4.11.0.86" },
     { name = "pillow", specifier = ">=11.3.0" },
     { name = "protobuf", specifier = ">=6.31.1" },
+    { name = "pyturbojpeg", git = "https://github.com/lilohuang/PyTurboJPEG.git" },
     { name = "spectral", specifier = ">=0.24" },
 ]
 
@@ -169,6 +171,14 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/76/a1/7a5a94032c83375e4fe7e7f56e3976ea6ac90c5e85fac8576409e25c39c3/protobuf-6.31.1-cp39-abi3-manylinux2014_aarch64.whl", hash = "sha256:a40fc12b84c154884d7d4c4ebd675d5b3b5283e155f324049ae396b95ddebc39", size = 322115, upload-time = "2025-05-28T19:25:47.128Z" },
     { url = "https://files.pythonhosted.org/packages/fa/b1/b59d405d64d31999244643d88c45c8241c58f17cc887e73bcb90602327f8/protobuf-6.31.1-cp39-abi3-manylinux2014_x86_64.whl", hash = "sha256:4ee898bf66f7a8b0bd21bce523814e6fbd8c6add948045ce958b73af7e8878c6", size = 321070, upload-time = "2025-05-28T19:25:50.036Z" },
     { url = "https://files.pythonhosted.org/packages/f7/af/ab3c51ab7507a7325e98ffe691d9495ee3d3aa5f589afad65ec920d39821/protobuf-6.31.1-py3-none-any.whl", hash = "sha256:720a6c7e6b77288b85063569baae8536671b39f15cc22037ec7045658d80489e", size = 168724, upload-time = "2025-05-28T19:25:53.926Z" },
+]
+
+[[package]]
+name = "pyturbojpeg"
+version = "1.8.2"
+source = { git = "https://github.com/lilohuang/PyTurboJPEG.git#ef7660a0e738f49a33d0a144d1e573c7f4eabfcc" }
+dependencies = [
+    { name = "numpy" },
 ]
 
 [[package]]

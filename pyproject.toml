@@ -10,5 +10,9 @@ dependencies = [
     "opencv-python>=4.11.0.86",
     "pillow>=11.3.0",
     "protobuf>=6.31.1",
+    "pyturbojpeg",
     "spectral>=0.24",
 ]
+
+[tool.uv.sources]
+pyturbojpeg = { git = "https://github.com/lilohuang/PyTurboJPEG.git" }
