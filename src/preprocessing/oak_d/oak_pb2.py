@@ -24,11 +24,89 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\toak.proto')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\toak.proto\"\x1f\n\x07Vec2I64\x12\t\n\x01x\x18\x01 \x01(\x03\x12\t\n\x01y\x18\x02 \x01(\x03\"\x1f\n\x07Vec2F32\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\"\x1f\n\x07Vec2F64\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\"*\n\x07Vec3I64\x12\t\n\x01x\x18\x01 \x01(\x03\x12\t\n\x01y\x18\x02 \x01(\x03\x12\t\n\x01z\x18\x03 \x01(\x03\"*\n\x07Vec3F32\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\"*\n\x07Vec3F64\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\t\n\x01z\x18\x03 \x01(\x01\";\n\x07Mat2F32\x12\x17\n\x05\x63ol_0\x18\x01 \x01(\x0b\x32\x08.Vec2F32\x12\x17\n\x05\x63ol_1\x18\x02 \x01(\x0b\x32\x08.Vec2F32\";\n\x07Mat2F64\x12\x17\n\x05\x63ol_0\x18\x01 \x01(\x0b\x32\x08.Vec2F64\x12\x17\n\x05\x63ol_1\x18\x02 \x01(\x0b\x32\x08.Vec2F64\"T\n\x07Mat3F32\x12\x17\n\x05\x63ol_0\x18\x01 \x01(\x0b\x32\x08.Vec3F32\x12\x17\n\x05\x63ol_1\x18\x02 \x01(\x0b\x32\x08.Vec3F32\x12\x17\n\x05\x63ol_2\x18\x03 \x01(\x0b\x32\x08.Vec3F32\"T\n\x07Mat3F64\x12\x17\n\x05\x63ol_0\x18\x01 \x01(\x0b\x32\x08.Vec3F64\x12\x17\n\x05\x63ol_1\x18\x02 \x01(\x0b\x32\x08.Vec3F64\x12\x17\n\x05\x63ol_2\x18\x03 \x01(\x0b\x32\x08.Vec3F64\"\x17\n\x07VecXF32\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x02\"\x17\n\x07VecXF64\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x01\"3\n\x07MatXF32\x12\x0c\n\x04rows\x18\x01 \x01(\x05\x12\x0c\n\x04\x63ols\x18\x02 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x03 \x03(\x02\"3\n\x07MatXF64\x12\x0c\n\x04rows\x18\x01 \x01(\x05\x12\x0c\n\x04\x63ols\x18\x02 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x03 \x03(\x02\"c\n\x0e\x43\x61meraSettings\x12\x15\n\rauto_exposure\x18\x01 \x01(\x08\x12\x15\n\rexposure_time\x18\x02 \x01(\r\x12\x11\n\tiso_value\x18\x03 \x01(\r\x12\x10\n\x08lens_pos\x18\x04 \x01(\r\"\xbe\x01\n\x0e\x45ncoderOptions\x12 \n\x07profile\x18\x01 \x01(\x0e\x32\x0f.EncoderProfile\x12+\n\x11rate_control_mode\x18\x02 \x01(\x0e\x32\x10.RateControlMode\x12\"\n\x1a\x63\x62r_preferred_bitrate_kbps\x18\x03 \x01(\r\x12\x1c\n\x14vbr_or_mjpeg_quality\x18\x04 \x01(\r\x12\x1b\n\x13\x66rames_per_keyframe\x18\x05 \x01(\r\"+\n\nResolution\x12\r\n\x05width\x18\x01 \x01(\r\x12\x0e\n\x06height\x18\x02 \x01(\r\"\xa3\x02\n\x0cOakImageMeta\x12\x10\n\x08\x63\x61tegory\x18\x01 \x01(\x03\x12\x14\n\x0cinstance_num\x18\x02 \x01(\x03\x12\x14\n\x0csequence_num\x18\x03 \x01(\x03\x12\x11\n\ttimestamp\x18\x04 \x01(\x01\x12\x18\n\x10timestamp_device\x18\x05 \x01(\x01\x12\x16\n\x0etimestamp_recv\x18\x07 \x01(\x01\x12!\n\x08settings\x18\x06 \x01(\x0b\x32\x0f.CameraSettings\x12(\n\x0f\x65ncoder_options\x18\x08 \x01(\x0b\x32\x0f.EncoderOptions\x12\x1f\n\nresolution\x18\t \x01(\x0b\x32\x0b.Resolution\x12\"\n\x0cpixel_format\x18\n \x01(\x0e\x32\x0c.PixelFormat\";\n\x08OakFrame\x12\x1b\n\x04meta\x18\x01 \x01(\x0b\x32\r.OakImageMeta\x12\x12\n\nimage_data\x18\x02 \x01(\x0c\"\x8e\x01\n\x07OakGyro\x12\x16\n\x04gyro\x18\x01 \x01(\x0b\x32\x08.Vec3F32\x12\x14\n\x0csequence_num\x18\x02 \x01(\x05\x12\x10\n\x08\x61\x63\x63uracy\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x04 \x01(\x01\x12\x18\n\x10timestamp_device\x18\x05 \x01(\x01\x12\x16\n\x0etimestamp_recv\x18\x06 \x01(\x01\"\x96\x01\n\x0bOakAccelero\x12\x1a\n\x08\x61\x63\x63\x65lero\x18\x01 \x01(\x0b\x32\x08.Vec3F32\x12\x14\n\x0csequence_num\x18\x02 \x01(\x05\x12\x10\n\x08\x61\x63\x63uracy\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x04 \x01(\x01\x12\x18\n\x10timestamp_device\x18\x05 \x01(\x01\x12\x16\n\x0etimestamp_recv\x18\x06 \x01(\x01\"T\n\x0cOakImuPacket\x12\x1d\n\x0bgyro_packet\x18\x01 \x01(\x0b\x32\x08.OakGyro\x12%\n\x0f\x61\x63\x63\x65lero_packet\x18\x02 \x01(\x0b\x32\x0c.OakAccelero\"/\n\rOakImuPackets\x12\x1e\n\x07packets\x18\x01 \x03(\x0b\x32\r.OakImuPacket\"t\n\x17OakTrackedFeaturePacket\x12\x14\n\x02xy\x18\x01 \x01(\x0b\x32\x08.Vec2F32\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x0b\n\x03\x61ge\x18\x03 \x01(\x05\x12\x13\n\x0bharrisScore\x18\x04 \x01(\x02\x12\x15\n\rtrackingError\x18\x05 \x01(\x02\"\xa0\x01\n\x18OakTrackedFeaturePackets\x12)\n\x07packets\x18\x01 \x03(\x0b\x32\x18.OakTrackedFeaturePacket\x12\x14\n\x0csequence_num\x18\x02 \x01(\x03\x12\x11\n\ttimestamp\x18\x03 \x01(\x01\x12\x18\n\x10timestamp_device\x18\x04 \x01(\x01\x12\x16\n\x0etimestamp_recv\x18\x05 \x01(\x01\"7\n\rOakDeviceInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04mxid\x18\x02 \x01(\t\x12\n\n\x02ip\x18\x03 \x01(\t\"\xef\x01\n\x0cOakSyncFrame\x12\x17\n\x04left\x18\x01 \x01(\x0b\x32\t.OakFrame\x12\x18\n\x05right\x18\x02 \x01(\x0b\x32\t.OakFrame\x12\x16\n\x03rgb\x18\x03 \x01(\x0b\x32\t.OakFrame\x12\x1c\n\tdisparity\x18\x04 \x01(\x0b\x32\t.OakFrame\x12\x16\n\x02nn\x18\x05 \x01(\x0b\x32\n.OakNNData\x12#\n\x0bimu_packets\x18\x06 \x01(\x0b\x32\x0e.OakImuPackets\x12\x14\n\x0csequence_num\x18\x07 \x01(\x03\x12#\n\x0b\x64\x65vice_info\x18\x08 \x01(\x0b\x32\x0e.OakDeviceInfo\"k\n\tOakNNData\x12\x1b\n\x04meta\x18\x01 \x01(\x0b\x32\r.OakImageMeta\x12\x14\n\x0cnum_channels\x18\x02 \x01(\r\x12\x0e\n\x06height\x18\x03 \x01(\r\x12\r\n\x05width\x18\x04 \x01(\r\x12\x0c\n\x04\x64\x61ta\x18\x05 \x01(\x0c\"\"\n\x04Pair\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\" \n\x08Metadata\x12\x14\n\x05pairs\x18\x01 \x03(\x0b\x32\x05.Pair\"J\n\rOakDataSample\x12\x1c\n\x05\x66rame\x18\x01 \x01(\x0b\x32\r.OakSyncFrame\x12\x1b\n\x08metadata\x18\x02 \x01(\x0b\x32\t.Metadata\")\n\x0eRotationMatrix\x12\x17\n\x0frotation_matrix\x18\x01 \x03(\x01\"\x82\x01\n\nExtrinsics\x12\x17\n\x0frotation_matrix\x18\x01 \x03(\x01\x12\"\n\x10spec_translation\x18\x02 \x01(\x0b\x32\x08.Vec3F32\x12\x18\n\x10to_camera_socket\x18\x03 \x01(\x05\x12\x1d\n\x0btranslation\x18\x04 \x01(\x0b\x32\x08.Vec3F32\"\xda\x01\n\nCameraData\x12\x15\n\rcamera_number\x18\x01 \x01(\r\x12\x13\n\x0b\x63\x61mera_type\x18\x02 \x01(\x05\x12\x18\n\x10\x64istortion_coeff\x18\x03 \x03(\x01\x12\x1f\n\nextrinsics\x18\x04 \x01(\x0b\x32\x0b.Extrinsics\x12\x0e\n\x06height\x18\x05 \x01(\r\x12\x18\n\x10intrinsic_matrix\x18\x06 \x03(\x01\x12\x15\n\rlens_position\x18\x07 \x01(\r\x12\x15\n\rspec_hfov_deg\x18\x08 \x01(\x01\x12\r\n\x05width\x18\t \x01(\r\"\x95\x01\n\x17StereoRectificationData\x12\x1a\n\x12left_camera_socket\x18\x01 \x01(\r\x12\x1f\n\x17rectified_rotation_left\x18\x02 \x03(\x01\x12 \n\x18rectified_rotation_right\x18\x03 \x03(\x01\x12\x1b\n\x13right_camera_socket\x18\x04 \x01(\r\"\xfe\x02\n\x0eOakCalibration\x12\x12\n\nbatch_name\x18\x01 \x01(\t\x12\x12\n\nbatch_time\x18\x02 \x01(\x05\x12\x12\n\nboard_conf\x18\x03 \x01(\t\x12\x14\n\x0c\x62oard_custom\x18\x04 \x01(\t\x12\x12\n\nboard_name\x18\x05 \x01(\t\x12\x15\n\rboard_options\x18\x06 \x01(\x05\x12\x11\n\tboard_rev\x18\x07 \x01(\t\x12 \n\x0b\x63\x61mera_data\x18\x08 \x03(\x0b\x32\x0b.CameraData\x12\x15\n\rhardware_conf\x18\t \x01(\t\x12#\n\x0eimu_extrinsics\x18\n \x01(\x0b\x32\x0b.Extrinsics\x12\x1a\n\x12miscellaneous_data\x18\x0b \x03(\t\x12\x14\n\x0cproduct_name\x18\x0c \x01(\t\x12;\n\x19stereo_rectification_data\x18\r \x01(\x0b\x32\x18.StereoRectificationData\x12\x0f\n\x07version\x18\x0e \x01(\r*[\n\x0e\x45ncoderProfile\x12\x11\n\rH264_BASELINE\x10\x00\x12\r\n\tH264_HIGH\x10\x01\x12\r\n\tH264_MAIN\x10\x02\x12\r\n\tH265_MAIN\x10\x03\x12\t\n\x05MJPEG\x10\x04*#\n\x0fRateControlMode\x12\x07\n\x03\x43\x42R\x10\x00\x12\x07\n\x03VBR\x10\x01*=\n\x0bPixelFormat\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06YUV420\x10\x01\x12\x08\n\x04RAW8\x10\x02\x12\x0b\n\x07\x45ncoded\x10\x03\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'oak_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
+  _globals['_ENCODERPROFILE']._serialized_start=3590
+  _globals['_ENCODERPROFILE']._serialized_end=3681
+  _globals['_RATECONTROLMODE']._serialized_start=3683
+  _globals['_RATECONTROLMODE']._serialized_end=3718
+  _globals['_PIXELFORMAT']._serialized_start=3720
+  _globals['_PIXELFORMAT']._serialized_end=3781
+  _globals['_VEC2I64']._serialized_start=13
+  _globals['_VEC2I64']._serialized_end=44
+  _globals['_VEC2F32']._serialized_start=46
+  _globals['_VEC2F32']._serialized_end=77
+  _globals['_VEC2F64']._serialized_start=79
+  _globals['_VEC2F64']._serialized_end=110
+  _globals['_VEC3I64']._serialized_start=112
+  _globals['_VEC3I64']._serialized_end=154
+  _globals['_VEC3F32']._serialized_start=156
+  _globals['_VEC3F32']._serialized_end=198
+  _globals['_VEC3F64']._serialized_start=200
+  _globals['_VEC3F64']._serialized_end=242
+  _globals['_MAT2F32']._serialized_start=244
+  _globals['_MAT2F32']._serialized_end=303
+  _globals['_MAT2F64']._serialized_start=305
+  _globals['_MAT2F64']._serialized_end=364
+  _globals['_MAT3F32']._serialized_start=366
+  _globals['_MAT3F32']._serialized_end=450
+  _globals['_MAT3F64']._serialized_start=452
+  _globals['_MAT3F64']._serialized_end=536
+  _globals['_VECXF32']._serialized_start=538
+  _globals['_VECXF32']._serialized_end=561
+  _globals['_VECXF64']._serialized_start=563
+  _globals['_VECXF64']._serialized_end=586
+  _globals['_MATXF32']._serialized_start=588
+  _globals['_MATXF32']._serialized_end=639
+  _globals['_MATXF64']._serialized_start=641
+  _globals['_MATXF64']._serialized_end=692
+  _globals['_CAMERASETTINGS']._serialized_start=694
+  _globals['_CAMERASETTINGS']._serialized_end=793
+  _globals['_ENCODEROPTIONS']._serialized_start=796
+  _globals['_ENCODEROPTIONS']._serialized_end=986
+  _globals['_RESOLUTION']._serialized_start=988
+  _globals['_RESOLUTION']._serialized_end=1031
+  _globals['_OAKIMAGEMETA']._serialized_start=1034
+  _globals['_OAKIMAGEMETA']._serialized_end=1325
+  _globals['_OAKFRAME']._serialized_start=1327
+  _globals['_OAKFRAME']._serialized_end=1386
+  _globals['_OAKGYRO']._serialized_start=1389
+  _globals['_OAKGYRO']._serialized_end=1531
+  _globals['_OAKACCELERO']._serialized_start=1534
+  _globals['_OAKACCELERO']._serialized_end=1684
+  _globals['_OAKIMUPACKET']._serialized_start=1686
+  _globals['_OAKIMUPACKET']._serialized_end=1770
+  _globals['_OAKIMUPACKETS']._serialized_start=1772
+  _globals['_OAKIMUPACKETS']._serialized_end=1819
+  _globals['_OAKTRACKEDFEATUREPACKET']._serialized_start=1821
+  _globals['_OAKTRACKEDFEATUREPACKET']._serialized_end=1937
+  _globals['_OAKTRACKEDFEATUREPACKETS']._serialized_start=1940
+  _globals['_OAKTRACKEDFEATUREPACKETS']._serialized_end=2100
+  _globals['_OAKDEVICEINFO']._serialized_start=2102
+  _globals['_OAKDEVICEINFO']._serialized_end=2157
+  _globals['_OAKSYNCFRAME']._serialized_start=2160
+  _globals['_OAKSYNCFRAME']._serialized_end=2399
+  _globals['_OAKNNDATA']._serialized_start=2401
+  _globals['_OAKNNDATA']._serialized_end=2508
+  _globals['_PAIR']._serialized_start=2510
+  _globals['_PAIR']._serialized_end=2544
+  _globals['_METADATA']._serialized_start=2546
+  _globals['_METADATA']._serialized_end=2578
+  _globals['_OAKDATASAMPLE']._serialized_start=2580
+  _globals['_OAKDATASAMPLE']._serialized_end=2654
+  _globals['_ROTATIONMATRIX']._serialized_start=2656
+  _globals['_ROTATIONMATRIX']._serialized_end=2697
+  _globals['_EXTRINSICS']._serialized_start=2700
+  _globals['_EXTRINSICS']._serialized_end=2830
+  _globals['_CAMERADATA']._serialized_start=2833
+  _globals['_CAMERADATA']._serialized_end=3051
+  _globals['_STEREORECTIFICATIONDATA']._serialized_start=3054
+  _globals['_STEREORECTIFICATIONDATA']._serialized_end=3203
+  _globals['_OAKCALIBRATION']._serialized_start=3206
+  _globals['_OAKCALIBRATION']._serialized_end=3588
 # @@protoc_insertion_point(module_scope)

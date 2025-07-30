@@ -1,46 +1,24 @@
 from __future__ import annotations
 
-from pathlib import Path
 import struct
+from pathlib import Path
+from typing import Any
 
-from typing import TYPE_CHECKING, Any
-import numpy as np 
-import jai_pb2
-from dataclasses import dataclass
-from PIL import Image 
+from PIL import Image
 
-if TYPE_CHECKING: 
-    from numpy.typing import NDArray
+from src.preprocessing.base import BasePreprocessor
+from src.preprocessing.jai import jai_pb2
 
-@dataclass 
-class JaiData: 
-    image_data: NDArray[np.uint8]
-    width: int 
-    height: int 
-    frame_rate: float 
-    blockid: int 
-    bandwidth: int 
-    timestamp: int 
-    system_timestamp: int     
 
-class JaiPreprocessor: 
-    def __init__(self, path: Path)->None: 
-        if not path.exists(): 
-            raise FileNotFoundError(f"{str(path)}")
-        if not path.is_file(): 
-            raise ValueError(f"Expects {path} to be a jai file")
-        self.path = path 
-        self.name = path.name 
-        self.images: list[JaiData] = [] 
-
-    def extract(self, **kwargs: dict[Any, Any])->None:
+class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
+    def extract(self, **kwargs: Any) -> None:
         with self.path.open("rb") as file:
             while True:
                 # Read the length of the next serialized message
                 serialized_timestamp = file.read(8)
                 if not serialized_timestamp:
                     break
-                systemtimestamp = struct.unpack("d", serialized_timestamp)[0]
+                system_timestamp = struct.unpack("d", serialized_timestamp)[0]
 
                 length_bytes = file.read(4)
                 if not length_bytes:
@@ -54,32 +32,25 @@ class JaiPreprocessor:
                 image_protobuf_obj = jai_pb2.JAIImage()
                 image_protobuf_obj.ParseFromString(serialized_image)
 
-                # # Convert the image data back to numpy.ndarray
-                image_data = np.frombuffer(image_protobuf_obj.image_data, dtype=np.uint8)
+                # Update to extracted image list
+                self.images.append(image_protobuf_obj)
+                self.system_timestamps.append(system_timestamp)
 
-                self.images.append(
-                    JaiData(
-                        image_data=image_data,
-                        width=image_protobuf_obj.width,
-                        height=image_protobuf_obj.height,
-                        frame_rate=image_protobuf_obj.frame_rate, 
-                        blockid = image_protobuf_obj.blockid, 
-                        bandwidth= image_protobuf_obj.bandwidth,
-                        timestamp= image_protobuf_obj.timestamp, 
-                        system_timestamp=systemtimestamp
-                    )
-                )
-    
-    def save(self, path: Path|str, width: int | None = None, height: int|None = None, **kwargs: dict[Any, Any])->None: 
-        file_path = Path(path) 
-        file_path.mkdir(parents=True, exists_ok=True)
-        for (index,image) in enumerate(self.images):
+    def save(
+        self,
+        path: Path | str,
+        width: int | None = None,
+        height: int | None = None,
+        **kwargs: Any,
+    ) -> None:
+        fpath = Path(path)
+        fpath.mkdir(parents=True, exist_ok=True)
+        for index, image in enumerate(self.images):
+            # Determine width and height
             iwidth = width if width is not None else image.width
-            iheight = height if height is not None else image.height 
-            reshaped_image: NDArray[np.uint8] = image.image_data.reshape((iheight, iwidth))
-
+            iheight = height if height is not None else image.height
+            reshaped_image = self.bytes_to_numpy(image.image_data).reshape((iheight, iwidth))
             # Convert the reshaped image data to a PIL Image object
-            image = Image.fromarray(reshaped_image.astype(np.uint8))
-            file_name = f"{self.name}.output_{index}.jpeg"
-            image_path = file_path / file_name 
-            image.save(image_path, "JPEG")
+            out_image = Image.fromarray(reshaped_image)
+            image_path = fpath / self.get_output_name(index, "jpeg")
+            out_image.save(image_path)

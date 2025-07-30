@@ -1,0 +1,10 @@
+{
+  "exclude": [
+    "**/*pb2.py",
+    "**/*pb2.pyi"
+  ],
+  "ignore": [
+    "**/*pb2.py",
+    "**/*pb2.pyi"
+  ]
+}

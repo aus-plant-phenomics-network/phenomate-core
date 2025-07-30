@@ -2,29 +2,29 @@ syntax = "proto3";
 
 message SickScanPointCloudMsg {
   message SickScanHeader {
-    uint32 seq = 1;                        
-    uint32 timestamp_sec = 2;              
-    uint32 timestamp_nsec = 3;             
-    bytes frame_id = 4;                    
+    uint32 seq = 1;
+    uint32 timestamp_sec = 2;
+    uint32 timestamp_nsec = 3;
+    bytes frame_id = 4;
   }
 
   message SickScanPointFieldMsg {
-    bytes name = 1;                  
-    uint32 offset = 2;                 
-    uint32 datatype = 3;               
-    uint32 count = 4;                  
+    bytes name = 1;
+    uint32 offset = 2;
+    uint32 datatype = 3;
+    uint32 count = 4;
   }
 
   message SickScanUint8Array {
-    uint64 capacity = 1;                           
-    uint64 size = 2;                               
-    bytes buffer = 3;                              
+    uint64 capacity = 1;
+    uint64 size = 2;
+    bytes buffer = 3;
   }
 
   message SickScanPointFieldArray {
-    uint64 capacity = 1;                                 
-    uint64 size = 2;                                     
-    repeated SickScanPointFieldMsg buffer = 3;         
+    uint64 capacity = 1;
+    uint64 size = 2;
+    repeated SickScanPointFieldMsg buffer = 3;
   }
 
   SickScanHeader header = 1;

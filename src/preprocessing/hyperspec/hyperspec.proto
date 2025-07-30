@@ -8,5 +8,5 @@ message HyperSpecImage {
   uint64 blockid = 5;              // Block ID
   uint64 bandwidth = 6;            // Bandwidth
   uint64 timestamp=7;             // timestamp of image
-  
+
 }
