@@ -21,7 +21,7 @@ def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
     match sensor.lower():
         case "jai":
             return JaiPreprocessor
-        case "hyperspec" | "hyperspectral" | "hyper-spectral":
+        case "hyperspec" | "hyper-spec" | "hyperspectral" | "hyper-spectral":
             return HyperspecPreprocessor
         case "oak":
             if "calibration" in details:

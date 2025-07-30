@@ -20,10 +20,10 @@ WARN := $(shell printf "$(YELLOW)⚠$(NC)")
 ERROR := $(shell printf "$(RED)✖$(NC)")
 
 # Protobuf Paths
-JAI_SRC = src/preprocessing/jai
-HYPERSPEC_SRC = src/preprocessing/hyperspec
-OAK_SRC = src/preprocessing/oak_d
-LIDAR_SRC = src/preprocessing/lidar
+JAI_SRC = phenomate_core/preprocessing/jai
+HYPERSPEC_SRC = phenomate_core/preprocessing/hyperspec
+OAK_SRC = phenomate_core/preprocessing/oak_d
+LIDAR_SRC = phenomate_core/preprocessing/lidar
 PROTOC = python -m grpc_tools.protoc
 JAI_FILE = jai.proto
 OAK_FILE = oak.proto
@@ -104,7 +104,7 @@ release:                                           ## Bump version and create re
 .PHONY: mypy
 mypy:                                              ## Run mypy
 	@echo "${INFO} Running mypy... 🔍"
-	@uv run dmypy run src
+	@uv run dmypy run phenomate_core
 	@echo "${OK} Mypy checks passed ✨"
 
 .PHONY: type-check

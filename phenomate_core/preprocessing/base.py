@@ -38,7 +38,7 @@ class BasePreprocessor[T](abc.ABC):
             base += f"-{index}"
         if details is not None:
             base += f"_{details}"
-        return f"{self._base_name}_preproc.{ext}"
+        return f"{base}.{ext}"
 
     @abc.abstractmethod
     def extract(self, **kwargs: Any) -> None: ...

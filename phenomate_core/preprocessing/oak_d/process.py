@@ -261,4 +261,7 @@ class OakCalibrationPreprocessor(BasePreprocessor[oak_pb2.OakCalibration]):
                 self.images.append(cal_msg)
 
     def save(self, path: str | Path, **kwargs: Any) -> None:
-        pass
+        file_path = Path(path) / self.get_output_name(None, "txt", "calibration")
+        with file_path.open(mode="a") as file:
+            for image in enumerate(self.images):
+                file.write(str(image) + "\n")
