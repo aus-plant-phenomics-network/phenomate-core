@@ -43,6 +43,9 @@ class BasePreprocessor[T](abc.ABC):
     @abc.abstractmethod
     def extract(self, **kwargs: Any) -> None: ...
 
+    @abc.abstractmethod
+    def save(self, path: Path | str, **kwargs: Any) -> None: ...
+
     @property
     def path(self) -> Path:
         return self._path

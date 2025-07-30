@@ -204,3 +204,9 @@ compile-hyperspec:
 
 .PHONY: compile-pb
 compile-pb: compile-oak compile-jai compile-lidar compile-hyperspec
+
+.PHONY: publish
+publish:
+	@rm -rf dist
+	@uv build
+	@uv publish
