@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 from spectral.io import envi
 
-from src.preprocessing.base import BasePreprocessor
-from src.preprocessing.hyperspec import hyperspec_pb2 as hs_pb2
+from phenomate_core.preprocessing.base import BasePreprocessor
+from phenomate_core.preprocessing.hyperspec import hyperspec_pb2 as hs_pb2
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

@@ -17,8 +17,8 @@ from typing import Any
 import cv2
 from turbojpeg import TurboJPEG
 
-from src.preprocessing.base import BasePreprocessor
-from src.preprocessing.oak_d import oak_pb2
+from phenomate_core.preprocessing.base import BasePreprocessor
+from phenomate_core.preprocessing.oak_d import oak_pb2
 
 # Initialize TurboJPEG
 image_decoder = TurboJPEG()  # type: ignore[no-untyped-call]

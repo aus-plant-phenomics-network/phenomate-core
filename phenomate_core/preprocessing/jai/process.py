@@ -6,8 +6,8 @@ from typing import Any
 
 from PIL import Image
 
-from src.preprocessing.base import BasePreprocessor
-from src.preprocessing.jai import jai_pb2
+from phenomate_core.preprocessing.base import BasePreprocessor
+from phenomate_core.preprocessing.jai import jai_pb2
 
 
 class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
