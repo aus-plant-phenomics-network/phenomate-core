@@ -33,7 +33,7 @@ preproc.save(path="output_dir")
 
 ## Development
 
-- Python 3.13+
+- Python 3.12+
 - Uses [ruff](https://github.com/astral-sh/ruff) and [mypy](http://mypy-lang.org/) for linting and type checking
 - Protobuf files should be compiled with `protoc` as needed
 
