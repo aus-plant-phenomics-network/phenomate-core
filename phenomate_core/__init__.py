@@ -18,12 +18,13 @@ __all__ = (
 
 
 def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
+    print(f"get_preprocessor called with sensor: {sensor}, details: {details}")
     match sensor.lower():
-        case "jai":
+        case sensor if "jai" in sensor:
             return JaiPreprocessor
-        case "hyperspec" | "hyper-spec" | "hyperspectral" | "hyper-spectral":
+        case sensor if "hyper" in sensor:
             return HyperspecPreprocessor
-        case "oak":
+        case sensor if "oak" in sensor:
             if "calibration" in details:
                 return OakCalibrationPreprocessor
             if "imu" in details:

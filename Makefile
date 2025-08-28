@@ -93,8 +93,7 @@ lock:                                              ## Rebuild lockfiles from scr
 release:                                           ## Bump version and create release tag
 	@echo "${INFO} Preparing for release... 📦"
 	@make clean
-	@uv run bump-my-version bump $(bump)
-	@make build
+	[ -n $(bump) ] && uv run bump-my-version bump $(bump) || (echo "${ERROR} Please provide a version bump type: 'patch', 'minor', or 'major'"; exit 1)
 	@echo "${OK} Release complete 🎉"
 
 
@@ -156,30 +155,30 @@ check-all: lint test-all coverage                  ## Run all linting, tests, an
 .PHONY: docs-clean
 docs-clean:                                        ## Dump the existing built docs
 	@echo "${INFO} Cleaning documentation build assets... 🧹"
-	@rm -rf docs/_build >/dev/null 2>&1
+	@rm -rf ./docs/build/ >/dev/null 2>&1
 	@echo "${OK} Documentation assets cleaned"
 
 .PHONY: docs-serve
 docs-serve: docs-clean                             ## Serve the docs locally
 	@echo "${INFO} Starting documentation server... 📚"
-	@uv run sphinx-autobuild docs docs/_build/ -j auto --watch app --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
+	@uv run sphinx-autobuild ./docs/source ./docs/build/-j auto --watch app --watch docs --watch tests --watch CONTRIBUTING.rst --port 8002
 
 .PHONY: docs
 docs: docs-clean                                   ## Dump the existing built docs and rebuild them
 	@echo "${INFO} Building documentation... 📝"
-	@uv run sphinx-build -M html docs docs/_build/ -E -a -j auto -W --keep-going
+	@uv run sphinx-build -M html ./docs/source ./docs/build/ -E -a -j auto -W --keep-going
 	@echo "${OK} Documentation built successfully"
 
 .PHONY: docs-linkcheck
 docs-linkcheck:                                    ## Run the link check on the docs
 	@echo "${INFO} Checking documentation links... 🔗"
-	@uv run sphinx-build -b linkcheck ./docs ./docs/_build -D linkcheck_ignore='http://.*','https://.*' >/dev/null 2>&1
+	@uv run sphinx-build -b linkcheck ./docs/source ./docs/build/ -D linkcheck_ignore='http://.*','https://.*' >/dev/null 2>&1
 	@echo "${OK} Link check complete"
 
 .PHONY: docs-linkcheck-full
 docs-linkcheck-full:                               ## Run the full link check on the docs
 	@echo "${INFO} Running full link check... 🔗"
-	@uv run sphinx-build -b linkcheck ./docs ./docs/_build -D linkcheck_anchors=0 >/dev/null 2>&1
+	@uv run sphinx-build -b linkcheck ./docs/source ./docs/build/ -D linkcheck_anchors=0 >/dev/null 2>&1
 	@echo "${OK} Full link check complete"
 
 

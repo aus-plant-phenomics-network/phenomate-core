@@ -1,12 +1,13 @@
 import abc
 from pathlib import Path
-from typing import Any
+from typing import TypeVar, Generic, Any
 
 import numpy as np
 from numpy.typing import NDArray
 
+T = TypeVar("T")
 
-class BasePreprocessor[T](abc.ABC):
+class BasePreprocessor(Generic[T], abc.ABC):
     def __init__(self, path: str | Path, in_ext: str = "bin", **kwargs: Any) -> None:
         self._in_ext = self.process_ext(in_ext)
         self._base_name = self.validate_file_path(path)
