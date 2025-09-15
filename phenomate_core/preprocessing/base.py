@@ -36,7 +36,7 @@ class BasePreprocessor(Generic[T], abc.ABC):
     def get_output_name(self, index: int | None, ext: str, details: str | None = None) -> str:
         base = f"{self._base_name}_preproc"
         if index is not None:
-            base += f"-{index}"
+            base += f"-{index:020}"
         if details is not None:
             base += f"_{details}"
         return f"{base}.{ext}"
