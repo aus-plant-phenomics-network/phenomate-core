@@ -1,5 +1,6 @@
-
-from phenomate_core.get_logging import shared_logger
+import logging
+#from phenomate_core.get_logging import shared_logger
+shared_logger = logging.getLogger('celery')
 
 def get_version() -> str:
     """
