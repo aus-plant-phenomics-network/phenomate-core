@@ -12,6 +12,7 @@ dependencies = [
     "protobuf>=6.31.1",
     "pyturbojpeg",
     "spectral>=0.24",
+    "tifffile[all]>=2025.9.30",
 ]
 
 [tool.uv.sources]

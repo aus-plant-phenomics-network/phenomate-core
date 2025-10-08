@@ -19,17 +19,20 @@ OK := $(shell printf "$(GREEN)✓$(NC)")
 WARN := $(shell printf "$(YELLOW)⚠$(NC)")
 ERROR := $(shell printf "$(RED)✖$(NC)")
 
+# Protobuf compiler
+PROTOC = python -m grpc_tools.protoc
 # Protobuf Paths
 JAI_SRC = phenomate_core/preprocessing/jai
 HYPERSPEC_SRC = phenomate_core/preprocessing/hyperspec
 OAK_SRC = phenomate_core/preprocessing/oak_d
 LIDAR_SRC = phenomate_core/preprocessing/lidar
-PROTOC = python -m grpc_tools.protoc
+IMU_SRC = phenomate_core/preprocessing/imu
+# Protobuf files
 JAI_FILE = jai.proto
 OAK_FILE = oak.proto
 LIDAR_FILE = lidar.proto
 HYPERSPEC_FILE = hyperspec.proto
-LINALG_FILE = linalg.proto
+IMU_FILE = imu.proto
 
 .PHONY: help
 help:                                               ## Display this help text for Makefile
@@ -200,6 +203,10 @@ compile-lidar:
 .PHONY: compile-hyperspec
 compile-hyperspec:
 	@uv run ${PROTOC} -I ${HYPERSPEC_SRC} --python_out ${HYPERSPEC_SRC} --mypy_out ${HYPERSPEC_SRC} ${HYPERSPEC_FILE}
+
+.PHONY: compile-imu
+compile-imu:
+	@uv run ${PROTOC} -I ${IMU_SRC} --python_out ${IMU_SRC} --mypy_out ${IMU_SRC} ${IMU_FILE}
 
 .PHONY: compile-pb
 compile-pb: compile-oak compile-jai compile-lidar compile-hyperspec
