@@ -5,6 +5,9 @@ from typing import TypeVar, Generic, Any
 import numpy as np
 from numpy.typing import NDArray
 
+import re
+import os
+
 T = TypeVar("T")
 
 class BasePreprocessor(Generic[T], abc.ABC):
@@ -50,3 +53,37 @@ class BasePreprocessor(Generic[T], abc.ABC):
     @property
     def path(self) -> Path:
         return self._path
+        
+    
+    @staticmethod
+    def extract_timestamp(filename: str, filestamp: str):
+        # Match the pattern: YYYY-MM-DD_HH-MM-SS_milliseconds
+        match = re.match(filestamp, filename)
+        return match.group(0) if match else None
+        
+    @staticmethod
+    def match_timestamp(target_filename: str, 
+                        list_of_filenames: list[str], 
+                        filestamp: str = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"
+                        ) -> list[str]:
+        target_timestamp = extract_timestamp(target_filename, filestamp)
+        if not target_timestamp:
+            return []
+
+        # Return all filenames that contain the same timestamp
+        return [f for f in list_of_filenames if target_timestamp in f]
+
+
+    @staticmethod
+    def list_files_in_directory(directory: Path ) -> list[str]:
+        # List all files in the directory
+        try:
+            files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
+            return files
+        except FileNotFoundError:
+            print(f"Directory not found: {directory}")
+            return []
+        except PermissionError:
+            print(f"Permission denied to access: {directory}")
+            return []
+
