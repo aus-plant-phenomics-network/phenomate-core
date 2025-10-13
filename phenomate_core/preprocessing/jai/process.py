@@ -22,9 +22,8 @@ import logging
 shared_logger = logging.getLogger('celery')
 from phenomate_core.get_version import get_version
 
-
 class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
-   """
+    """
     Average Timing  and compression results (per image for 17 images) extracted from 
     protobuffer file and saved with equivalent metadata.
     +-----------+----------------------------------+------------------+-----------------+-------------+------------------------+ 
@@ -107,7 +106,7 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
       # "GPSLongitude": [118, 14, 55.32]
     # }
     """
-    
+
     def extract(self, **kwargs: Any) -> None:
         with self.path.open("rb") as file:
             while True:
@@ -135,9 +134,7 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
                 
                 shared_logger.info(f"Converted timestamp: system_timestamp:{system_timestamp} image.timestamp: {image_protobuf_obj.timestamp} framerate: {image_protobuf_obj.frame_rate}")
                 
-    
-  
-     
+                
     # Set bigtiff=True, for 64 bit TIFF  tags
     def save(
         self,

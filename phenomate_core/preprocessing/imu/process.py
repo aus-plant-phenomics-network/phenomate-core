@@ -3,10 +3,12 @@ from __future__ import annotations
 import struct
 from pathlib import Path
 from typing import Any
-
 from datetime import datetime, timezone
-
 import time
+import shutil
+import os
+
+from phenomate_core.preprocessing.base import BasePreprocessor
 
 # from phenomate_core.get_logging import shared_logger
 import logging
@@ -35,21 +37,32 @@ class ImuPreprocessor(BasePreprocessor[Path]):
         shared_logger.info(f'Directory: {dir_part}')
         shared_logger.info(f'Filename:  {file_part}')
 
-        files_in_dir = self.list_files_in_directory(dir_part)
+        origin_line = ''
+        origin_file = str(self.path) + '.origin'
+        with open(origin_file, "r", encoding="utf-8") as f:
+            origin_line = f.readline()
+            origin_line = origin_line.strip()
+        
+        origin_path = Path(origin_line)
+        shared_logger.info(f'Filename:  {origin_path}')
+        files_in_dir = self.list_files_in_directory(origin_path.parent)
         shared_logger.info(f'Files in directory: {files_in_dir}')
-
+        
+        
         filestamp = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"  # defined in the Resonate processing when they save the files.
         matched = self.match_timestamp(file_part, files_in_dir, filestamp)
         shared_logger.info(f'Matched files: {matched}')
         
-        self.images = matched
+        matched_with_dir = [os.path.join(origin_path.parent, f) for f in matched]
+        # Add the list of matched filenames to the classes data to be used
+        # in the save() method
+        self.images = matched_with_dir
     
         shared_logger.info("Found the following files with a matched timestamp:")
         shared_logger.info(self.images)
                 
   
      
-    # Set bigtiff=True, for 64 bit TIFF  tags
     def save(
         self,
         path: Path | str,
@@ -58,9 +71,9 @@ class ImuPreprocessor(BasePreprocessor[Path]):
         **kwargs: Any,
     ) -> None:
         """
-        Save the data using the tifffile package.
-        N.B. Only the Comression='none' output files are read natively by Windows      
-            
+        Save the data files from the IMU
+        The bin file is the original data from the Phenomate IMU system
+        The two CSV files are the raw positioning data and the GPS referenced data (GNSS data)
         """
         fpath = Path(path)
         fpath.mkdir(parents=True, exist_ok=True)
@@ -68,30 +81,39 @@ class ImuPreprocessor(BasePreprocessor[Path]):
         current_year = str(datetime.now().year)
         phenomate_version = get_version()
         start_time = time.time()
-          
-        for file_path in file_paths:
-            if file_path.endswith('.bin'):
-                shutil.copy(file_path, os.path.join(bin_destination, os.path.basename(file_path)))
-            elif file_path.endswith('.csv'):
-                try:
-                    df = pd.read_csv(file_path)
-                    if 'gps_millisecs' in df.columns:
-                        df_sorted = df.sort_values(by='gps_millisecs')
-                        sorted_dataframes[file_path] = df_sorted
+
+        # There should be 3 files, 1 bin file and two CSV files 
+        # and one CSV has GNSS in the filename
+        for file_path in self.images:
+            try:
+                if file_path.endswith('.bin'):
+                    file_path_name_ext = fpath / self.get_output_name(index = None, ext = 'bin', details = None)
+                elif file_path.lower().endswith('.csv'):
+                    file_path = Path(file_path)
+                    output_file = file_path.name   
+                    # As the output filename isderived from the input .bin file, we need to add back the
+                    # the GNSS part to the GNSS CSV filename
+                    if output_file.find("GNSS") != 1:
+                        file_path_name_ext = fpath / self.get_output_name(index = None, ext = 'csv', details = "GNSS")
                     else:
-                        print(f"'gps_millisecs' column not found in {file_path}")
-                except Exception as e:
-                    print(f"Error reading {file_path}: {e}")
+                        file_path_name_ext = fpath / self.get_output_name(index = None, ext = 'csv', details = None)
+                        
+                    #TODO: Reorder the raw x.y.z timestamp data into chronological order in this step
+                    shared_logger.info(f"file_path: {file_path}")
+                    shared_logger.info(f"file_path_name_ext: {file_path_name_ext}")
+                    shutil.copy(file_path, file_path_name_ext)
+                    
+                shared_logger.info(f"Copied file: {file_path_name_ext}")
+                
+            except Exception as e:
+                shared_logger.error(f"Error reading {file_path}: {e}")
 
-                df_sorted.to_csv(output_path, index=False)
-
-            
+                
 
         # End timer
         end_time = time.time()
-        # Print elapsed time
-        print(f"Write time (tifffile {compression_l} not bigtiff): {end_time - start_time:.4f} seconds")  # print statements end as a WARNING in logger output
-        shared_logger.info(f"Write time (tifffile {compression_l} not bigtiff): {end_time - start_time:.4f} seconds")
+        # Print elapsed time        
+        shared_logger.info(f"Write time (IMU data): {end_time - start_time:.4f} seconds")
         
         
         

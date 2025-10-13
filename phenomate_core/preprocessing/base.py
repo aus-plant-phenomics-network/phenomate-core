@@ -55,18 +55,18 @@ class BasePreprocessor(Generic[T], abc.ABC):
         return self._path
         
     
-    @staticmethod
-    def extract_timestamp(filename: str, filestamp: str):
+
+    def extract_timestamp(self, filename: str, filestamp: str):
         # Match the pattern: YYYY-MM-DD_HH-MM-SS_milliseconds
         match = re.match(filestamp, filename)
         return match.group(0) if match else None
         
-    @staticmethod
-    def match_timestamp(target_filename: str, 
+
+    def match_timestamp(self, target_filename: str, 
                         list_of_filenames: list[str], 
                         filestamp: str = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"
                         ) -> list[str]:
-        target_timestamp = extract_timestamp(target_filename, filestamp)
+        target_timestamp = self.extract_timestamp(target_filename, filestamp)
         if not target_timestamp:
             return []
 

@@ -6,7 +6,7 @@ from phenomate_core.preprocessing.oak_d.process import (
     OakFramePreprocessor,
     OakImuPacketsPreprocessor,
 )
-
+from phenomate_core.preprocessing.imu.process import ImuPreprocessor
 
 
 
@@ -35,4 +35,6 @@ def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
             if "imu" in details:
                 return OakImuPacketsPreprocessor
             return OakFramePreprocessor
+        case sensor if "imu" in sensor:
+            return ImuPreprocessor
     raise ValueError(f"Unsupported sensor type: {sensor}")
