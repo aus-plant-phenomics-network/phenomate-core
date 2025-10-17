@@ -153,6 +153,7 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         
         current_year = str(datetime.now().year)
         phenomate_version = get_version()
+        user = "Phenomate user" # 315 Creator of the image
         start_time = time.time()
         for index, image in enumerate(self.images):
             # Determine width and height
@@ -170,29 +171,29 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             # shared_logger.info(f"Converted timestamp (no compression): image.timestamp: {image.timestamp}  {utc_datetime}")
             
             
-            tag_269 =  f'"title":"Phenomate JAI output",  "software": "phenomate-core {phenomate_version}", '
-            tag_270 =  '"A plant phenotype experiment image. Source image is JAI camera protobuffer object raw Bayer image. Output converted using OpenCV.cvtColor() and saved using the tifffile library"'
-            tag_274 =  tifffile.ORIENTATION.TOPLEFT # ORIENTATION should be an integer value
-            # tag_305 =   f'phenomate-core {phenomate_version}' # tifffile adds its own name here.
-            tag_306 =   f'{tiff_date}'
+            tag_269   =  f'"title":"Phenomate JAI output",  "software": "phenomate-core {phenomate_version}", '
+            tag_270   =  '"A plant phenotype experiment image. Source image is JAI camera protobuffer object raw Bayer image. Output converted using OpenCV.cvtColor() and saved using the tifffile library"'
+            tag_274   =  tifffile.ORIENTATION.TOPLEFT # ORIENTATION should be an integer value            
+            # tag_305 = # tifffile adds its own name here.
+            tag_306   =   f'{tiff_date}'
+            tag_315   = f'{user}'            
             tag_33432 = f'"Copyright {current_year} Australian Plant Phenomics Network. All rights reserved"' 
             tag_65000 = f'{{ "timestamp_description": "system_timestamp"" : "The system timestamp that the image was added to the protocol buffer", "jai_collection_timestamp": "The JAI camera counter value when the image was taken" }}'             
             tag_65001 = f'{{ "system_timestamp": "{self.system_timestamps[index]}" }}'
             tag_65002 = f'{{ "jai_collection_timestamp": "{image.timestamp}" }} '
            
             extratags = [
-                (269, 's', len(tag_269) + 1, tag_269, True),  # 269 DocumentName
-                # (270, 's', len(tag_270) + 1, tag_270, True), # Use the description parameter in the tifffile.imwrite() method
-                (274, 'I', 1               , tag_274, True),  # 274 Image orientation
-                # (305, 's', len(tag_305) + 1, tag_305, True), # 305 software version - tifffile adds its own name here.
-                (306, 's', len(tag_306) + 1, tag_306, True),  # 306 Creation time
-                # (315, 's', 1, f'{}', True),  # 315 Creator of the image
+                (269, 's', len(tag_269) + 1, tag_269, True),        # 269 DocumentName
+                # (270, 's', len(tag_270) + 1, tag_270, True),      # Use the description parameter in the tifffile.imwrite() method
+                (274, 'I', 1               , tag_274, True),        # 274 Image orientation
+                # (305, 's', len(tag_305) + 1, tag_305, True),      # 305 software version - tifffile adds its own name here.
+                (306, 's', len(tag_306) + 1, tag_306, True),        # 306 Creation time
+                (315, 's', len(tag_315) + 1, tag_315, True),            # 315 Creator of the image
                 (33432, 's', len(tag_33432) + 1, tag_33432, True),  # 33432 Copyright information
                 (65000, 's', len(tag_65000) + 1, tag_65000, True),
-                # (65001, 'Q', 1, image.timestamp, True),  # For 64 bit tags are enabled by bigtiff=True
+                # (65001, 'Q', 1, image.timestamp, True),           # For 64 bit tags are enabled by bigtiff=True
                 (65001, 's', len(tag_65001) + 1, tag_65001, True),
-                (65002, 's', len(tag_65002) + 1, tag_65002, True),
-                # (65003, 'd', 1, self.system_timestamps[index], True), # For 64 bit tags are enabled by bigtiff=True
+                (65002, 's', len(tag_65002) + 1, tag_65002, True),                
             ]
             
             compression_l='none'  # lossless: lzma  zstd   compressionargs={'lossless': True} not available: bzip2 lz4 ; slow: jpeg2000, webp 
@@ -205,6 +206,7 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
                 f'{image_path_name_ext}',
                 rgb_image,
                 bigtiff=False,
+                planarconfig='contig',  # This is the default interleaved rgb format.
                 compression=compression_l,  
                 # compression='jpeg | jpeg2000' , compressionargs={'level': 100},   # JPEG quality level (0–100) 0 is lower quality
                 # compressionargs={'lossless': True},  # webp quality level
@@ -216,7 +218,6 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         # End timer
         end_time = time.time()
         # Print elapsed time
-        print(f"Write time (tifffile {compression_l} not bigtiff): {end_time - start_time:.4f} seconds")  # print statements end as a WARNING in logger output
         shared_logger.info(f"Write time (tifffile {compression_l} not bigtiff): {end_time - start_time:.4f} seconds")
         
         
@@ -287,7 +288,6 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         # End timer
         end_time = time.time()
         # Print elapsed time
-        print(f"Write time ({png_lib} {png_compression} compression): {end_time - start_time:.4f} seconds")  # print statements end as a WARNING in logger output
         shared_logger.info(f"Write time ({png_lib} {png_compression} compression tiff): {end_time - start_time:.4f} seconds")
         
        
@@ -362,7 +362,6 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         # End timer
         end_time = time.time()
         # Print elapsed time
-        print(f"Write time ({tiff_compression} {image_lib} tiff): {end_time - start_time:.4f} seconds")  # print statements end as a WARNING in logger output
         shared_logger.info(f"Write time ({tiff_compression} {image_lib} tiff): {end_time - start_time:.4f} seconds")
         
         
