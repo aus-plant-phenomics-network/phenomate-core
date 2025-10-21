@@ -1,33 +1,12 @@
 from pathlib import Path
-import lidar_pb2
+from phenomate_core.preprocessing.lidar import lidar_pb2
 import sys
 import os
 
 import ctypes
 import datetime
 
-
-# We can set this as a environment variable SICKSCAN_LIB_PATH?
-path_to_sickscan_install = '/home/jbowden/local'
-
-sys.path.append(
-    os.path.abspath(
-        os.path.join(
-            path_to_sickscan_install, '/include/sick_scan_xd'
-        )
-    )
-)
-
-
-import sick_scan_api as ss
-
-from sick_scan_api import *
-# Load the sick scan library
-sick_scan_library = ss.loadLibrary(path_to_sickscan_install+'/lib', "libsick_scan_xd_shared_lib.so")
-
-# Create the API handle
-api_handle = ss.SickScanApiCreate(sick_scan_library)
-
+import phenomate_core.preprocessing.lidar.sick_scan_api as ss
 
 def from_proto(protocol_message):
 

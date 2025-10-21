@@ -7,7 +7,7 @@ from phenomate_core.preprocessing.oak_d.process import (
     OakImuPacketsPreprocessor,
 )
 from phenomate_core.preprocessing.imu.process import ImuPreprocessor
-
+from phenomate_core.preprocessing.lidar.process import LidarPreprocessor
 
 
 __all__ = (
@@ -19,8 +19,6 @@ __all__ = (
     "OakImuPacketsPreprocessor",
 )
 
-
-    
 
 def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
     print(f"get_preprocessor called with sensor: {sensor}, details: {details}")
@@ -37,4 +35,7 @@ def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
             return OakFramePreprocessor
         case sensor if "imu" in sensor:
             return ImuPreprocessor
+        case sensor if "lidar" in sensor:
+            return LidarPreprocessor
+            
     raise ValueError(f"Unsupported sensor type: {sensor}")
