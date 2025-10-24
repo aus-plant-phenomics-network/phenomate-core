@@ -17,9 +17,9 @@ import datatable as dt
 import datatable.math as mt
 
 from phenomate_core.preprocessing.base import BasePreprocessor
-from phenomate_core.preprocessing.lidar import lidar_pb2
-from  phenomate_core.preprocessing.lidar.sick_scan_api import ctypesCharArrayToString
-from  phenomate_core.preprocessing.lidar.reading_proto_buff import from_proto
+from phenomate_core.preprocessing.lidar2d import lidar_pb2
+from  phenomate_core.preprocessing.lidar2d.sick_scan_api import ctypesCharArrayToString
+from  phenomate_core.preprocessing.lidar2d.reading_proto_buff import from_proto
 
 dt.options.nthreads = 1 
 
@@ -29,7 +29,7 @@ shared_logger = logging.getLogger('celery')
 from phenomate_core.get_version import get_version
 
 
-import psutil
+import psutil 
 
 def check_memory_usage(notes: str):
     memory = psutil.virtual_memory()
@@ -38,7 +38,7 @@ def check_memory_usage(notes: str):
 
 
 
-class LidarPreprocessor(BasePreprocessor[lidar_pb2.SickScanPointCloudMsg]):
+class Lidar2DPreprocessor(BasePreprocessor[lidar_pb2.SickScanPointCloudMsg]):
     """
     lidar_pb2.SickScanPointCloudMsg is the self.images list type
     
@@ -449,27 +449,25 @@ class LidarPreprocessor(BasePreprocessor[lidar_pb2.SickScanPointCloudMsg]):
         if (
             field_offset_x is None
             or field_offset_y is None
-            or (not self.filtered_data and field_offset_z is None)
+            or (field_offset_z is None)
         ):
-            raise ValueError("Offsets not assigned correctly.")
+            raise ValueError("LIDAR SickScan Processing: Offsets not assigned correctly.")
 
         # row_step = width * 16   (16 == 4 x fp32 value - x, y, z, intensity)
         # This is the length in bytes of the full message array
         cloud_data_buffer_len = pointcloud_msg.row_step * pointcloud_msg.height 
 
-        assert (
+
+        if ( not (
             pointcloud_msg.data.size == cloud_data_buffer_len
             and num_fields == 4
             and field_offset_x == 0
             and field_offset_y == 4
-            and field_offset_intensity == 12
-            and (self.filtered_data or field_offset_z == 8)
-        )
-        # cloud_data_buffer = bytearray(cloud_data_buffer_len)
-
-        # convert the buffer data to a bytearray
-        # for n in range(cloud_data_buffer_len):
-        #     cloud_data_buffer[n] = pointcloud_msg.data.buffer[n]
+            and field_offset_z == 8
+            and field_offset_intensity == 12             
+            )
+        ):
+            raise ValueError("LIDAR SickScan Processing: Data offsets not as expected.")
 
         total_floats = pointcloud_msg.width * pointcloud_msg.height * 4
         
@@ -480,27 +478,20 @@ class LidarPreprocessor(BasePreprocessor[lidar_pb2.SickScanPointCloudMsg]):
             # shared_logger.info(f"pointcloud_msg.row_step  : {pointcloud_msg.row_step} bytes")
             # shared_logger.info(f"Type of data.buffer      : {type(pointcloud_msg.data.buffer)}")
             # shared_logger.info(f"Type of data.buffer[{index}]: {type(pointcloud_msg.data.buffer[index])}")
-        # if index < 5:
-        #     shared_logger.info(f" num_fields {num_fields} ;  field_offset_x {field_offset_x} ; field_offset_y {field_offset_y} ; field_offset_z {field_offset_z} ; field_offset_intensity {field_offset_intensity} ;  width {pointcloud_msg.width} ; height {pointcloud_msg.height};  row_step {pointcloud_msg.row_step} ; point_step {pointcloud_msg.point_step}")
+            # shared_logger.info(f" num_fields {num_fields} ;  field_offset_x {field_offset_x} ; field_offset_y {field_offset_y} ; field_offset_z {field_offset_z} ; field_offset_intensity {field_offset_intensity} ;  width {pointcloud_msg.width} ; height {pointcloud_msg.height};  row_step {pointcloud_msg.row_step} ; point_step {pointcloud_msg.point_step}")
         
-        
-        buffer = ctypes.cast(pointcloud_msg.data.buffer, ctypes.POINTER(ctypes.c_float * total_floats)).contents
-        # np_array = np.frombuffer(buffer, dtype=np.float32)
-        points_xyzi_1d =  np.frombuffer(
-                        buffer,
-                        dtype=np.float32,
-                        count=total_floats,
-                        offset=0,
-                    )
+        try:
+            buffer = ctypes.cast(pointcloud_msg.data.buffer, ctypes.POINTER(ctypes.c_float * total_floats)).contents
 
-
-        ## Read in all the message points in one read
-        # points_xyzi_1d =  np.frombuffer(
-                        # cloud_data_buffer,
-                        # dtype=np.float32,
-                        # count=total_floats,
-                        # offset=0,
-                    # )
+            points_xyzi_1d =  np.frombuffer(
+                            buffer,
+                            dtype=np.float32,
+                            count=total_floats,
+                            offset=0,
+                        )
+        except Exception as e:
+            shared_logger.error(f"LIDAR SickScan Processing: Error reading buffer for message {index}: {e}")
+                    
         # map the read in data to a 2D array            
         points_xyzi = points_xyzi_1d.reshape(( pointcloud_msg.width * pointcloud_msg.height, 4))
         

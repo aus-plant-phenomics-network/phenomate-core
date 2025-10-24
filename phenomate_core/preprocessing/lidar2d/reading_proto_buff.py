@@ -1,12 +1,12 @@
 from pathlib import Path
-from phenomate_core.preprocessing.lidar import lidar_pb2
+from phenomate_core.preprocessing.lidar2d import lidar_pb2
 import sys
 import os
 
-import ctypes
+import ctypes 
 import datetime
 
-import phenomate_core.preprocessing.lidar.sick_scan_api as ss
+import phenomate_core.preprocessing.lidar2d.sick_scan_api as ss
 
 def from_proto(protocol_message):
 

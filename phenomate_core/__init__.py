@@ -1,14 +1,13 @@
 from phenomate_core.preprocessing.base import BasePreprocessor
 from phenomate_core.preprocessing.hyperspec.process import HyperspecPreprocessor
+from phenomate_core.preprocessing.imu.process import ImuPreprocessor
 from phenomate_core.preprocessing.jai.process import JaiPreprocessor
+from phenomate_core.preprocessing.lidar2d.process import Lidar2DPreprocessor
 from phenomate_core.preprocessing.oak_d.process import (
     OakCalibrationPreprocessor,
     OakFramePreprocessor,
     OakImuPacketsPreprocessor,
 )
-from phenomate_core.preprocessing.imu.process import ImuPreprocessor
-from phenomate_core.preprocessing.lidar.process import LidarPreprocessor
-
 
 __all__ = (
     "BasePreprocessor",
@@ -36,6 +35,6 @@ def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
         case sensor if "imu" in sensor:
             return ImuPreprocessor
         case sensor if "lidar" in sensor:
-            return LidarPreprocessor
-            
+            return Lidar2DPreprocessor
+
     raise ValueError(f"Unsupported sensor type: {sensor}")

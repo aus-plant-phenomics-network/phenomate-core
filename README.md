@@ -1,7 +1,17 @@
 # phenomate-core
 ## Overview
 
-**phenomate-core** is a Python package for processing Phenomate sensor binaries to appropriate outputs.
+**phenomate-core** is a Python package for processing Phenomate sensor binaries into appropriate outputs.
+The Phenomate platform collects data from the following sensors
+
+- JAI RGB camera
+- IMU - INS401
+- Lidar (2D)
+- Hyperspectral Camera
+
+And it packs the data (typically) into Protobuffer messages as the sensors collect it. This package unpacks and
+and possibly transforms the data from the protobuffer files, ready for further processing.
+
 
 ## Installation
 
@@ -17,7 +27,33 @@ make install
 
 Please see the official [page](https://libjpeg-turbo.org/) for installing `libjpeg-turbo` for your operating system.
 
-### Installing Sickscan - Lidar
+### Installing Sickscan - 2D Lidar
+
+The conversion code for the 2D LIDAR has the required Python code as part of this repository. If
+the code needs updating then it can be built from the GitHub repository:
+
+```bash
+mkdir -p ./sick_scan_ws
+cd ./sick_scan_ws
+
+git clone -b master https://github.com/SICKAG/sick_scan_xd.git
+
+mkdir -p ./build
+pushd ./build
+rm -rf ./*
+export ROS_VERSION=0
+
+# specify optimisation level: -DO=0 (compiler flags -g -O0), -DO=1 (for compiler flags -O1) or -DO=2
+# Install to local directory uising CMAKE_INSTALL_PREFIX=
+cmake -DCMAKE_INSTALL_PREFIX=~/local -DROS_VERSION=0 -DLDMRS=0 -DSCANSEGMENT_XD=0 -G "Unix Makefiles" ../sick_scan_xd
+make -j4
+make -j4 install  # install locally
+popd
+
+# The output Python code can be found in:
+# ~/local/include/sick_scan_xd/sick_scan_xd.py
+# and can be copied to phenomate-core/phenomate_core/preprocessing/lidar
+```
 
 ## Usage
 
@@ -36,6 +72,11 @@ preproc.save(path="output_dir")
 - Python 3.11+
 - Uses [ruff](https://github.com/astral-sh/ruff) and [mypy](http://mypy-lang.org/) for linting and type checking
 - Protobuf files should be compiled with `protoc` as needed
+
+```baah
+uv pip install protobuf
+make compile-pb
+```
 
 ## Contributing
 
