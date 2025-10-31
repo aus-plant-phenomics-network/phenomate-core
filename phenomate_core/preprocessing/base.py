@@ -11,6 +11,7 @@ from numpy.typing import NDArray
 
 T = TypeVar("T")
 
+import logging
 shared_logger = logging.getLogger("celery")
 
 class BasePreprocessor(Generic[T], abc.ABC):
@@ -76,7 +77,7 @@ class BasePreprocessor(Generic[T], abc.ABC):
             origin_line = origin_line.strip()
 
         origin_path = Path(origin_line)
-        shared_logger.debug(f"Contents of .origin file:  {origin_path}")
+        shared_logger.debug(f"BasePreprocessor: Contents of .origin file:  {origin_path}")
         return origin_path
 
     def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
@@ -92,12 +93,12 @@ class BasePreprocessor(Generic[T], abc.ABC):
         """
         # Set of all files in the directory
         files_in_dir = self.list_files_in_directory(origin_path.parent)
-        shared_logger.debug(f" files_in_dir:  {files_in_dir}")
+        shared_logger.debug(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
         # Set the timestamp regular expression
         filestamp = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"  # defined in the Resonate processing when they save the files.
         # Match the filename timestamps to the input filename
         matched = self.match_timestamp(file_part, files_in_dir, filestamp)
-        shared_logger.debug(f"Matched files: {matched}")
+        shared_logger.debug(f"BasePreprocessor: Matched files: {matched}")
         # Add back the directory
         matched_with_dir = [origin_path.parent / f for f in matched]
         # Save the list of matched filenames to extra_files list to be used
@@ -141,7 +142,7 @@ class BasePreprocessor(Generic[T], abc.ABC):
                         # TODO: Reorder the raw x.y.z timestamp data into chronological order in this step
 
                     shutil.copy(file_path, file_path_name_ext)
-                    shared_logger.info(f" IMU data transfer: Copied file: {file_path_name_ext}")
+                    shared_logger.info(f"BasePreprocessor: IMU data transfer: Copied file: {file_path_name_ext}")
                 
                 elif type(self).__name__ == 'JaiPreprocessor':
                     # For the JAI there should be 2 extra files, both json
@@ -152,20 +153,20 @@ class BasePreprocessor(Generic[T], abc.ABC):
                                 index=None, ext="json", details=None
                         ) 
                         shutil.copy(file_path, file_path_name_ext)
-                        shared_logger.info(f" JAI data transfer: Copied file: {file_path_name_ext}") 
+                        shared_logger.info(f"BasePreprocessor: JAI data transfer: Copied file: {file_path_name_ext}") 
                     
                 else:
                     shared_logger.info(f" BasePreprocessor.copy_extra_files() is not configured for class: {type(self).__name__}")
 
 
             except FileNotFoundError as e:
-                shared_logger.error(f" data transfer: File not found: {file_path} — {e}")
+                shared_logger.error(f"BasePreprocessor: data transfer: File not found: {file_path} — {e}")
             except PermissionError as e:
-                shared_logger.error(f" data transfer: Permission denied: {file_path} — {e}")
+                shared_logger.error(f"BasePreprocessor: data transfer: Permission denied: {file_path} — {e}")
             except OSError as e:
-                shared_logger.error(f" data transfer: OS error while accessing {file_path}: {e}")
+                shared_logger.error(f"BasePreprocessor: data transfer: OS error while accessing {file_path}: {e}")
             except Exception as e:
-                shared_logger.exception(f" data transfer: Unexpected error while reading {file_path}: {e}")
+                shared_logger.exception(f"BasePreprocessor: data transfer: Unexpected error while reading {file_path}: {e}")
                 raise
 
     def extract_timestamp(self, filename: str, filestamp: str):

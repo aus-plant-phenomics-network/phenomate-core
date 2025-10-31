@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import traceback
 import struct
 import time
 from datetime import UTC, datetime
@@ -103,6 +104,19 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
     """
 
     def extract(self, **kwargs: Any) -> None:
+        
+        dir_part = self.path.parent  # this is another Path type
+        file_part = self.path.name  # this is a str
+
+        # Read the path that was written to the self.path+'.origin' file        
+        origin_path = self.open_origin_file()  
+        # Select the matching files from the path by the timestamp of the self.path file
+        path_objects = self.matched_file_list(origin_path, file_part)
+        
+        self.extra_files = path_objects
+        shared_logger.info(f"JaiPreprocessor.extract(): number of related files:  {len(self.extra_files)}")
+        shared_logger.info(f"JaiPreprocessor.extract(): related files: {self.extra_files}")
+        
         with self.path.open("rb") as file:
             while True:
                 # Read the length of the next serialized message
@@ -127,10 +141,12 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
                 self.images.append(image_protobuf_obj)
                 self.system_timestamps.append(system_timestamp)
 
-                shared_logger.info(
-                    f"Converted timestamp: system_timestamp:{system_timestamp} image.timestamp: {image_protobuf_obj.timestamp} framerate: {image_protobuf_obj.frame_rate}"
-                )
-
+                # shared_logger.info(
+                    # f"Converted timestamp: system_timestamp:{system_timestamp} image.timestamp: {image_protobuf_obj.timestamp} framerate: {image_protobuf_obj.frame_rate}"
+                # )
+        shared_logger.info(f"JaiPreprocessor.extract() Number of images extraced:  {len(self.images)}")
+        
+        
     # Set bigtiff=True, for 64 bit TIFF  tags
     def save(
         self,
@@ -144,7 +160,17 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         """
         fpath = Path(path)
         fpath.mkdir(parents=True, exist_ok=True)
-
+        shared_logger.info(f"JaiPreprocessor.save() output path (fpath): {fpath} ")
+        
+        start_time = time.time()
+        self.copy_extra_files(fpath)
+        # End timer
+        end_time = time.time()
+        # Print elapsed time
+        shared_logger.info(f"JaiPreprocessor.save() Copy file time (JAI data): {end_time - start_time:.4f} seconds")
+        
+        
+        
         current_year = str(datetime.now(UTC).year)
         phenomate_version = get_version()
         user = "Phenomate user"  # 315 Creator of the image
@@ -194,29 +220,38 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             image_path_name_ext = fpath / self.get_output_name(
                 index=image.timestamp, ext="tiff", details=f"{compression_l}_tifffile"
             )
-            shared_logger.info(
-                f"Saving file with tifffile library: {image_path_name_ext}  {utc_datetime}"
-            )
-            # Write tiff image file
+          
+            try:
+                tifffile.imwrite(
+                    f"{image_path_name_ext}",
+                    rgb_image,
+                    bigtiff=False,
+                    planarconfig="contig",  # This is the default interleaved rgb format.
+                    compression=compression_l,
+                    # compression='jpeg | jpeg2000' , compressionargs={'level': 100},   # JPEG quality level (0 to 100) 0 is lower quality
+                    # compressionargs={'lossless': True},  # webp quality level
+                    description=tag_270,
+                    extratags=extratags,
+                    photometric="rgb",
+                )
+            except IOError as e:
+                shared_logger.error(f"JaiPreprocessor.save() I/O error occurred: {e}")
+                raise
+            except FileNotFoundError:
+                shared_logger.error("JaiPreprocessor.save() File not found.")            
+                raise
+            except PermissionError:
+                shared_logger.error("You do not have permission to write to this file.")
+                raise
+            except Exception as e:
+                shared_logger.error(f"Unexpected error: {e}")
+                shared_logger.error(f"JaiPreprocessor.save() {traceback.format_exc()}")
+                raise
 
-            tifffile.imwrite(
-                f"{image_path_name_ext}",
-                rgb_image,
-                bigtiff=False,
-                planarconfig="contig",  # This is the default interleaved rgb format.
-                compression=compression_l,
-                # compression='jpeg | jpeg2000' , compressionargs={'level': 100},   # JPEG quality level (0 to 100) 0 is lower quality
-                # compressionargs={'lossless': True},  # webp quality level
-                description=tag_270,
-                extratags=extratags,
-                photometric="rgb",
-            )
-
-        # End timer
         end_time = time.time()
         # Print elapsed time
         shared_logger.info(
-            f"Write time (tifffile {compression_l} not bigtiff): {end_time - start_time:.4f} seconds"
+            f"JaiPreprocessor.save() Write time for {index+1} files: (tifffile compression: {compression_l}, not bigtiff): {end_time - start_time:.4f} seconds "
         )
 
     # PNG data conversion code using PIL save_png_with_metadata_with_PIL()
