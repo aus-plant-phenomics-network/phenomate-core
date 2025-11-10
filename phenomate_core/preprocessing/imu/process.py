@@ -4,6 +4,7 @@ import logging
 import time
 from pathlib import Path
 from typing import Any
+import shutil
 
 from phenomate_core.preprocessing.base import BasePreprocessor
 
@@ -146,6 +147,74 @@ class ImuPreprocessor(BasePreprocessor[Path]):
         shared_logger.info(f"IMU data transfer: number of related files:  {len(self.extra_files)}")
         # self.images = path_objects
 
+    def copy_extra_files(self, fpath: Path) -> None:
+        """
+        Extra files that are associated with the .bin proto buffer data can be copied to the destination directory.
+        
+        :fpath Path: is the directory in which to save the files
+        
+        This method impicitly uses the extra_files list that should be populated in the extract() method using
+        open_origin_file() and matched_file_list() (see: ImuPreprocessor.extract())
+        
+        There are currently two specialised file copying sections to this 
+        
+        """
+        for file_path in self.extra_files:
+            try:
+                # For the IMU there should be 3 files, 1 bin file and two CSV files
+                # and one CSV has GNSS in the filename
+                if file_path.suffix == ".bin":
+                    file_path_name_ext = fpath / self.get_output_name(
+                        index=None, ext="bin", details=None
+                    )
+                elif file_path.suffix.lower() == ".csv":
+                    file_path = Path(file_path)
+                    output_file = file_path.name  # str
+                    # As the output filename isderived from the input .bin file, we need to add back the
+                    # the GNSS part to the GNSS CSV filename
+                    if output_file.lower().find("_gnss.csv") >= 0:
+                        file_path_name_ext = fpath / self.get_output_name(
+                            index=None, ext="csv", details="GNSS"
+                        )
+                    else:
+                        file_path_name_ext = fpath / self.get_output_name(
+                            index=None, ext="csv", details=None
+                        )
+                shutil.copy(file_path, file_path_name_ext)
+                shared_logger.info(f"BasePreprocessor.copy_extra_files(): IMU data transfer: Copied file: {file_path_name_ext}")
+
+            except FileNotFoundError as e:
+                shared_logger.error(f"BasePreprocessor: data transfer: File not found: {file_path} — {e}")
+            except PermissionError as e:
+                shared_logger.error(f"BasePreprocessor: data transfer: Permission denied: {file_path} — {e}")
+            except OSError as e:
+                shared_logger.error(f"BasePreprocessor: data transfer: OS error while accessing {file_path}: {e}")
+            except Exception as e:
+                shared_logger.exception(f"BasePreprocessor: data transfer: Unexpected error while reading {file_path}: {e}")
+                raise
+                
+    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
+
+        """
+        Return a list of files from the source directory that match the timstamp of the :path: file.
+        """
+        # Set of all files in the directory
+        files_in_dir = self.list_files_in_directory(origin_path.parent)
+        shared_logger.info(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
+        
+        # Set the timestamp regular expression
+        filestamp = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"  # defined in the Resonate processing when they save the files.
+        # Match the filename timestamps to the input filename
+        matched = self.match_timestamp(file_part, files_in_dir, filestamp)
+        shared_logger.info(f"BasePreprocessor: Matched files: {matched}")
+        # Add back the directory
+        matched_with_dir = [origin_path.parent / f for f in matched]
+        # Save the list of matched filenames to extra_files list to be used
+        # in the save() method. Conver t he strings to Path objects        
+        path_objects = [Path(p) for p in matched_with_dir]
+        return path_objects
+        
+            
     def save(
         self,
         path: Path | str,

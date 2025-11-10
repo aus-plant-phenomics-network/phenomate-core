@@ -247,7 +247,18 @@ class Lidar2DPreprocessor(BasePreprocessor[lidar_pb2.SickScanPointCloudMsg]):
         shared_logger.info(f"LIDAR SickScan Processing: CSV write time : {end_time - start_time:.4f} seconds")
         check_memory_usage('save 5')  
     
-
+    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("LIDAR SickScan.copy_extra_files() not implemented")
+        return []
+                
+    def copy_extra_files(self, fpath: Path) -> None:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("LIDAR SickScan.copy_extra_files() not implemented")
     
     def save_datatable(
         self,

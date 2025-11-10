@@ -7,6 +7,9 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+import shutil
+
+from google.protobuf.message import DecodeError
 
 import cv2
 import tifffile
@@ -107,45 +110,141 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         
         dir_part = self.path.parent  # this is another Path type
         file_part = self.path.name  # this is a str
+        
+        shared_logger.info(f"JaiPreprocessor.extract(): file_part: {file_part}")
+        
 
         # Read the path that was written to the self.path+'.origin' file        
         origin_path = self.open_origin_file()  
         # Select the matching files from the path by the timestamp of the self.path file
         path_objects = self.matched_file_list(origin_path, file_part)
         
-        self.extra_files = path_objects
-        shared_logger.info(f"JaiPreprocessor.extract(): number of related files:  {len(self.extra_files)}")
-        shared_logger.info(f"JaiPreprocessor.extract(): related files: {self.extra_files}")
+        if path_objects != None:
+            self.extra_files = path_objects
+            shared_logger.info(f"JaiPreprocessor.extract(): number of related files:  {len(self.extra_files)}")
+            shared_logger.info(f"JaiPreprocessor.extract(): related files: {self.extra_files}")
         
         with self.path.open("rb") as file:
             while True:
-                # Read the length of the next serialized message
-                serialized_timestamp = file.read(8)
-                if not serialized_timestamp:
+                try:
+                    # Read the length of the next serialized message
+                    serialized_timestamp = file.read(8)
+                    if not serialized_timestamp:
+                        break
+                    system_timestamp = struct.unpack("d", serialized_timestamp)[0]
+
+                    length_bytes = file.read(4)
+                    if not length_bytes:
+                        break
+                    length = int.from_bytes(length_bytes, byteorder="little")
+
+                    # Read the serialized message
+                    serialized_image = file.read(length)
+
+                    # Parse the protobuf message
+                    image_protobuf_obj = jai_pb2.JAIImage()
+                    image_protobuf_obj.ParseFromString(serialized_image)
+
+                    # Update to extracted image list
+                    self.images.append(image_protobuf_obj)
+                    self.system_timestamps.append(system_timestamp)
+
+                    shared_logger.debug(
+                        f"JaiPreprocessor.extract(): Converted timestamp: image.timestamp: {image_protobuf_obj.timestamp} framerate: {image_protobuf_obj.frame_rate}"
+                    )
+                except DecodeError as e:
+                    shared_logger.exception(f"JaiPreprocessor.extract(): Protobuffer  Decode error for file: {file_part}: {e}")
                     break
-                system_timestamp = struct.unpack("d", serialized_timestamp)[0]
-
-                length_bytes = file.read(4)
-                if not length_bytes:
-                    break
-                length = int.from_bytes(length_bytes, byteorder="little")
-
-                # Read the serialized message
-                serialized_image = file.read(length)
-
-                # Parse the protobuf message
-                image_protobuf_obj = jai_pb2.JAIImage()
-                image_protobuf_obj.ParseFromString(serialized_image)
-
-                # Update to extracted image list
-                self.images.append(image_protobuf_obj)
-                self.system_timestamps.append(system_timestamp)
-
-                # shared_logger.info(
-                    # f"Converted timestamp: system_timestamp:{system_timestamp} image.timestamp: {image_protobuf_obj.timestamp} framerate: {image_protobuf_obj.frame_rate}"
-                # )
+                except Exception as e:
+                    shared_logger.exception(f"JaiPreprocessor.extract(): Unexpected error while reading {self.path}: {e}")
+                    raise
         shared_logger.info(f"JaiPreprocessor.extract() Number of images extraced:  {len(self.images)}")
         
+  
+    def copy_extra_files(self, fpath: Path) -> None:
+        """
+        Extra files that are associated with the .bin proto buffer data can be copied to the destination directory.
+        
+        :fpath Path: is the directory in which to save the files
+        
+        This method impicitly uses the extra_files list that should be populated in the extract() method using
+        open_origin_file() and matched_file_list() (see: ImuPreprocessor.extract())
+        """
+        for file_path in self.extra_files:
+            try:
+                
+                # For the JAI there should be 2 extra files, both json
+                if file_path.suffix.lower() == ".json":
+                    file_path = Path(file_path)
+                    
+                    details = ''
+                    if "device_params".lower() in file_path.name.lower():
+                        details = 'device_params'
+                    if "stream_params".lower() in file_path.name.lower():
+                        details = 'stream_params'
+                    
+                    output_file = file_path.name  # str
+                    file_path_name_ext = fpath / self.get_output_name(
+                            index=None, ext="json", details=details
+                    ) 
+                    shutil.copy(file_path, file_path_name_ext)
+                    shared_logger.info(f"BasePreprocessor.copy_extra_files(): JAI data transfer: Copied file: {file_path_name_ext}") 
+
+            except FileNotFoundError as e:
+                shared_logger.error(f"BasePreprocessor: data transfer: File not found: {file_path} — {e}")
+            except PermissionError as e:
+                shared_logger.error(f"BasePreprocessor: data transfer: Permission denied: {file_path} — {e}")
+            except OSError as e:
+                shared_logger.error(f"BasePreprocessor: data transfer: OS error while accessing {file_path}: {e}")
+            except Exception as e:
+                shared_logger.exception(f"BasePreprocessor: data transfer: Unexpected error while reading {file_path}: {e}")
+                raise
+
+    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
+        """
+        Return a list of files from the source directory that match the timstamp of the :path: file.
+           
+        :param origin_path: The path to the source directoy
+        :type origin_path: Path
+        :param file_part: The name of the selected data file, with a timestamp in the name
+        :type file_part: str
+
+        """
+        # Set of all files in the directory
+        files_in_dir = self.list_files_in_directory(origin_path.parent)
+        shared_logger.info(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
+        
+        matched = []
+        json_files = [f for f in files_in_dir if f.lower().endswith(".json")]
+        shared_logger.info(f"BasePreprocessor: json_files:  {json_files}")
+        
+        # Separate into two lists
+        stream_params_files = [f for f in json_files if "stream_params" in f]
+        device_params_files = [f for f in json_files if "device_params" in f]
+
+        # convert '_' to '.' decimal in the time seconds field
+        # parts = file_part.split("_", 3)  # Split into 4 parts max
+        # if len(parts)==4:
+            # file_part_converted = f"{parts[0]}_{parts[1]}.{parts[2]}_{parts[3]}" 
+        # else: 
+            # file_part_converted = f"{parts[0]}_{parts[1]}.{parts[2]}"
+        res_match = self.return_closest_in_time(stream_params_files, file_part)  
+        if res_match != None:            
+            matched.append(res_match)
+        res_match = self.return_closest_in_time(device_params_files, file_part)  
+        if res_match != None:            
+            matched.append(res_match)
+
+        
+        if len(matched) > 0:
+            matched_with_dir = [origin_path.parent / f for f in matched]
+            path_objects = [Path(p) for p in matched_with_dir]
+            
+            shared_logger.info(f"BasePreprocessor:matched_file_list() path_objects files: {path_objects}")
+            return path_objects 
+        else:
+            return None
+            
         
     # Set bigtiff=True, for 64 bit TIFF  tags
     def save(

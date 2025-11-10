@@ -51,7 +51,23 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
                 # # Convert the image data back to numpy.ndarray
                 self.images.append(image_protobuf_obj)
                 self.system_timestamps.append(system_timestamp)
-
+                
+        
+        
+    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("HyperspecPreprocessor.matched_file_list() not implemented")
+        return []
+                
+    def copy_extra_files(self, fpath: Path) -> None:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("HyperspecPreprocessor.copy_extra_files() not implemented")
+        
+        
     @staticmethod
     def unpack_mono12packed_to_16bit(
         packed_data: NDArray[np.uint8], width: int, height: int

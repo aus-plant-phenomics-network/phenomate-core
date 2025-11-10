@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from typing import Any, Generic, TypeVar
 import shutil
+from datetime import datetime
 
 import numpy as np
 from numpy.typing import NDArray
@@ -80,95 +81,71 @@ class BasePreprocessor(Generic[T], abc.ABC):
         shared_logger.debug(f"BasePreprocessor: Contents of .origin file:  {origin_path}")
         return origin_path
 
-    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
+
+    @abc.abstractmethod
+    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]: 
         """
         Return a list of files from the source directory that match the timstamp of the :path: file.
-           
-        :param origin_path: The path to the source directoy
-        :type origin_path: Path
-        :param file_part: The name of the selected data file, with a timestamp in the name
-        :type file_part: str
         
-           
+        This method should be overridden to define the behavior
+                of 'matched_file_list' in the derived class
         """
-        # Set of all files in the directory
-        files_in_dir = self.list_files_in_directory(origin_path.parent)
-        shared_logger.debug(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
-        # Set the timestamp regular expression
-        filestamp = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"  # defined in the Resonate processing when they save the files.
-        # Match the filename timestamps to the input filename
-        matched = self.match_timestamp(file_part, files_in_dir, filestamp)
-        shared_logger.debug(f"BasePreprocessor: Matched files: {matched}")
-        # Add back the directory
-        matched_with_dir = [origin_path.parent / f for f in matched]
-        # Save the list of matched filenames to extra_files list to be used
-        # in the save() method. Conver t he strings to Path objects        
-        path_objects = [Path(p) for p in matched_with_dir]
-        return path_objects
-        
+        ...
+                
+    @abc.abstractmethod
     def copy_extra_files(self, fpath: Path) -> None:
         """
-        Extra files that are associated with the .bin protobuffer data can be copied to the destination directory.
+        Extra files that are associated with the .bin proto buffer data can be copied to the destination directory.
         
         :fpath Path: is the directory in which to save the files
         
         This method impicitly uses the extra_files list that should be populated in the extract() method using
         open_origin_file() and matched_file_list() (see: ImuPreprocessor.extract())
         
+        
+        This method should be overridden to define the behavior
+                of 'copy_extra_files' in the derived class
+
         """
-        for file_path in self.extra_files:
-            try:
-                if type(self).__name__ == 'ImuPreprocessor':
-                    # For the IMU there should be 3 files, 1 bin file and two CSV files
-                    # and one CSV has GNSS in the filename
-                    if file_path.suffix == ".bin":
-                        file_path_name_ext = fpath / self.get_output_name(
-                            index=None, ext="bin", details=None
-                        )
-                    elif file_path.suffix.lower() == ".csv":
-                        file_path = Path(file_path)
-                        output_file = file_path.name  # str
-                        # As the output filename isderived from the input .bin file, we need to add back the
-                        # the GNSS part to the GNSS CSV filename
-                        if output_file.lower().find("_gnss.csv") >= 0:
-                            file_path_name_ext = fpath / self.get_output_name(
-                                index=None, ext="csv", details="GNSS"
-                            )
-                        else:
-                            file_path_name_ext = fpath / self.get_output_name(
-                                index=None, ext="csv", details=None
-                            )
+        ...
+       
 
-                        # TODO: Reorder the raw x.y.z timestamp data into chronological order in this step
+    def return_closest_in_time(self, json_files : list, file_part_converted : str):
+        """
+        Returns the string from the list that is closest in time as the file_part_converted 
+        string using the embedded timestamp data in the filenames.
+        
+        Returns: The string that has the closest timestamp
+        
+        Expects input timestamp format of: YYYY-MM-DD_HH-MM-SS_ddddddd
+        
+        """
 
-                    shutil.copy(file_path, file_path_name_ext)
-                    shared_logger.info(f"BasePreprocessor: IMU data transfer: Copied file: {file_path_name_ext}")
+        # Convert json list to tuples (datetime, filename)
+        json_times = [(self.extract_datetime(f), f) for f in json_files]
+
+        # Sort JSON files by time
+        json_times.sort(key=lambda x: x[0])
+
+        file_part_time = self.extract_datetime(file_part_converted)
+        older_json = None
+        for jt, jf in json_times:
+            if jt < file_part_time:
+                older_json = jf
+            else:
+                break
                 
-                elif type(self).__name__ == 'JaiPreprocessor':
-                    # For the JAI there should be 2 extra files, both json
-                    if file_path.suffix.lower() == ".json":
-                        file_path = Path(file_path)
-                        output_file = file_path.name  # str
-                        file_path_name_ext = fpath / self.get_output_name(
-                                index=None, ext="json", details=None
-                        ) 
-                        shutil.copy(file_path, file_path_name_ext)
-                        shared_logger.info(f"BasePreprocessor: JAI data transfer: Copied file: {file_path_name_ext}") 
+        return older_json
+        
                     
-                else:
-                    shared_logger.info(f" BasePreprocessor.copy_extra_files() is not configured for class: {type(self).__name__}")
-
-
-            except FileNotFoundError as e:
-                shared_logger.error(f"BasePreprocessor: data transfer: File not found: {file_path} — {e}")
-            except PermissionError as e:
-                shared_logger.error(f"BasePreprocessor: data transfer: Permission denied: {file_path} — {e}")
-            except OSError as e:
-                shared_logger.error(f"BasePreprocessor: data transfer: OS error while accessing {file_path}: {e}")
-            except Exception as e:
-                shared_logger.exception(f"BasePreprocessor: data transfer: Unexpected error while reading {file_path}: {e}")
-                raise
-
+    def extract_datetime(self, filename):
+        """
+        Expects input timestamp format of: YYYY-MM-DD_HH-MM-SS_ddddddd
+        """
+        date_str = filename.split("_")[0] + "_" + filename.split("_")[1] + "." + filename.split("_")[2]
+        return datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S.%f")    
+        
+    
     def extract_timestamp(self, filename: str, filestamp: str):
         # Match the pattern: YYYY-MM-DD_HH-MM-SS_milliseconds
         match = re.match(filestamp, filename)

@@ -20,6 +20,9 @@ from turbojpeg import TurboJPEG
 from phenomate_core.preprocessing.base import BasePreprocessor
 from phenomate_core.preprocessing.oak_d import oak_pb2
 
+import logging
+shared_logger = logging.getLogger('celery')
+
 # Initialize TurboJPEG
 image_decoder = TurboJPEG()  # type: ignore[no-untyped-call]
 
@@ -63,6 +66,19 @@ class OakFramePreprocessor(BasePreprocessor[bytes]):
 
                 self.images.append(image_data)
 
+    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("OakFramePreprocessor.matched_file_list() not implemented")
+        return []
+                
+    def copy_extra_files(self, fpath: Path) -> None:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("OakFramePreprocessor.copy_extra_files() not implemented")
+    
     def save_image_metadata_to_csv(self, path: Path) -> None:
         """This function saves the image metadata to a CSV file."""
         # Define the CSV header
@@ -187,7 +203,20 @@ class OakImuPacketsPreprocessor(BasePreprocessor[oak_pb2.OakImuPacket]):
                 # Extract the OakGyro and OakAccelero data
                 for packet in imu_msg.packets:
                     self.images.append(packet)
-
+                    
+    def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("OakFramePreprocessor.copy_extra_files() not implemented")
+        return []
+                
+    def copy_extra_files(self, fpath: Path) -> None:
+        """
+        Not yet required in this derived class
+        """
+        shared_logger.info("OakFramePreprocessor.copy_extra_files() not implemented")
+        
     def save(self, path: Path | str, **kwargs: Any) -> None:
         file_path = Path(path) / self.get_output_name(None, "csv", "imu")
         with file_path.open(mode="w", newline="") as file:
