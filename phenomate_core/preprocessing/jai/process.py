@@ -19,8 +19,9 @@ from phenomate_core.get_version import get_version
 from phenomate_core.preprocessing.base import BasePreprocessor
 from phenomate_core.preprocessing.jai import jai_pb2
 
-shared_logger = logging.getLogger("celery")
-
+# shared_logger = logging.getLogger("celery")
+from celery.utils.log import get_task_logger
+shared_logger = get_task_logger(__name__)
 
 class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
     r"""Average Timing  and compression results (per image for 17 images) extracted from
@@ -212,11 +213,11 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         """
         # Set of all files in the directory
         files_in_dir = self.list_files_in_directory(origin_path.parent)
-        shared_logger.info(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
+        shared_logger.debug(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
         
         matched = []
         json_files = [f for f in files_in_dir if f.lower().endswith(".json")]
-        shared_logger.info(f"BasePreprocessor: json_files:  {json_files}")
+        shared_logger.debug(f"BasePreprocessor: json_files:  {json_files}")
         
         # Separate into two lists
         stream_params_files = [f for f in json_files if "stream_params" in f]

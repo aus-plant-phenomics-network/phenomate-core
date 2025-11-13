@@ -8,8 +8,9 @@ import shutil
 
 from phenomate_core.preprocessing.base import BasePreprocessor
 
-shared_logger = logging.getLogger("celery")
-
+# shared_logger = logging.getLogger("celery")
+from celery.utils.log import get_task_logger
+shared_logger = get_task_logger(__name__)
 
 class ImuPreprocessor(BasePreprocessor[Path]):
     """
@@ -200,13 +201,13 @@ class ImuPreprocessor(BasePreprocessor[Path]):
         """
         # Set of all files in the directory
         files_in_dir = self.list_files_in_directory(origin_path.parent)
-        shared_logger.info(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
+        shared_logger.debug(f"BasePreprocessor: files_in_dir:  {files_in_dir}")
         
         # Set the timestamp regular expression
         filestamp = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"  # defined in the Resonate processing when they save the files.
         # Match the filename timestamps to the input filename
         matched = self.match_timestamp(file_part, files_in_dir, filestamp)
-        shared_logger.info(f"BasePreprocessor: Matched files: {matched}")
+        shared_logger.debug(f"BasePreprocessor: Matched files: {matched}")
         # Add back the directory
         matched_with_dir = [origin_path.parent / f for f in matched]
         # Save the list of matched filenames to extra_files list to be used

@@ -23,10 +23,14 @@ if TYPE_CHECKING:
 DEFAULT_WIDTH = 1024
 DEFAULT_HEIGHT = 224
 
+from celery.utils.log import get_task_logger
+shared_logger = get_task_logger(__name__)
+
 
 class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
     def extract(self, **kwargs: Any) -> None:
         with self.path.open("rb") as file:
+            shared_logger.info(f"HyperspecPreprocessor.extract() filename:{str(self.path)}")
             while True:
                 # Read the length of the next serialized message
                 serialized_timestamp = file.read(8)
@@ -107,6 +111,7 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
             "interleave": "bil",
             "byte order": 1,
         }
+        shared_logger.info(f"HyperspecPreprocessor.write_to_envi_file() filename:{str(envi_filename)}")
         envi_image = envi.create_image(envi_filename, md, interleave="bil", ext="raw")  # type: ignore[no-untyped-call]
 
         envi_memmap = envi_image.open_memmap(interleave="bil", writable=True)
@@ -131,6 +136,7 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
         ]
         file_path = path / self.get_output_name(None, "csv")
         with file_path.open("w", encoding="utf-8") as csv_file:
+            shared_logger.info(f"HyperspecPreprocessor.write_to_csv_file() filename:{str(file_path)}")
             writer = csv.writer(csv_file)
             writer.writerow(headers)
             for system_timestamp, image in zip(self.system_timestamps, self.images, strict=False):

@@ -25,7 +25,9 @@ dt.options.nthreads = 1
 
 # from phenomate_core.get_logging import shared_logger
 import logging
-shared_logger = logging.getLogger('celery')
+# shared_logger = logging.getLogger('celery')
+from celery.utils.log import get_task_logger
+shared_logger = get_task_logger(__name__)
 from phenomate_core.get_version import get_version
 
 

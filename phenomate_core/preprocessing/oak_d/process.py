@@ -20,8 +20,10 @@ from turbojpeg import TurboJPEG
 from phenomate_core.preprocessing.base import BasePreprocessor
 from phenomate_core.preprocessing.oak_d import oak_pb2
 
-import logging
-shared_logger = logging.getLogger('celery')
+# import logging
+# shared_logger = logging.getLogger('celery')
+from celery.utils.log import get_task_logger
+shared_logger = get_task_logger(__name__)
 
 # Initialize TurboJPEG
 image_decoder = TurboJPEG()  # type: ignore[no-untyped-call]
@@ -34,6 +36,7 @@ class OakFramePreprocessor(BasePreprocessor[bytes]):
 
     def extract(self, **kwargs: Any) -> None:
         with self.path.open("rb") as f:
+            shared_logger.info(f"OakFramePreprocessor.extract() filename:{str(self.path)}")
             while True:
                 # Read the length of serialized meta
                 # first 8 bytes of the file are
@@ -81,6 +84,7 @@ class OakFramePreprocessor(BasePreprocessor[bytes]):
     
     def save_image_metadata_to_csv(self, path: Path) -> None:
         """This function saves the image metadata to a CSV file."""
+        
         # Define the CSV header
         header = [
             "amiga_system_timestamp",
@@ -100,6 +104,7 @@ class OakFramePreprocessor(BasePreprocessor[bytes]):
         file_path = path / self.get_output_name(None, "csv")
         # Open the CSV file for writing
         with file_path.open(mode="w", newline="") as csv_file:
+            shared_logger.info(f"OakFramePreprocessor.save_image_metadata_to_csv() filename:{str(file_path)}")
             writer = csv.DictWriter(csv_file, fieldnames=header)
 
             # Write the header
@@ -179,6 +184,7 @@ class OakFramePreprocessor(BasePreprocessor[bytes]):
 class OakImuPacketsPreprocessor(BasePreprocessor[oak_pb2.OakImuPacket]):
     def extract(self, **kwargs: Any) -> None:
         with self.path.open("rb") as f:
+            shared_logger.info(f"OakImuPacketsPreprocessor.extract() filename:{str(self.path)}")
             while True:
                 serialized_timestamp = f.read(8)
                 if not serialized_timestamp:
@@ -220,6 +226,7 @@ class OakImuPacketsPreprocessor(BasePreprocessor[oak_pb2.OakImuPacket]):
     def save(self, path: Path | str, **kwargs: Any) -> None:
         file_path = Path(path) / self.get_output_name(None, "csv", "imu")
         with file_path.open(mode="w", newline="") as file:
+            shared_logger.info(f"OakImuPacketsPreprocessor.save() filename:{str(file_path)}")
             writer = csv.writer(file)
 
             # Write the header
