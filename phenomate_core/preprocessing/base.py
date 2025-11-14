@@ -12,8 +12,8 @@ from numpy.typing import NDArray
 
 T = TypeVar("T")
 
-import logging
-shared_logger = logging.getLogger("celery")
+from ..get_version import get_task_logger
+shared_logger = get_task_logger(__name__)
 
 class BasePreprocessor(Generic[T], abc.ABC):
     def __init__(self, path: str | Path, in_ext: str = "bin", **kwargs: Any) -> None:
@@ -73,7 +73,7 @@ class BasePreprocessor(Generic[T], abc.ABC):
 
         # read the first line of the .origin file which stores the path of the
         # origin of 
-        with Path.open(origin_file, encoding="utf-8") as f:
+        with Path.open(Path(origin_file), encoding="utf-8") as f:
             origin_line = f.readline()
             origin_line = origin_line.strip()
 
@@ -110,7 +110,7 @@ class BasePreprocessor(Generic[T], abc.ABC):
         ...
        
 
-    def return_closest_in_time(self, json_files : list, file_part_converted : str):
+    def return_closest_in_time(self, json_files : list, file_part_converted : str) -> str | None:
         """
         Returns the string from the list that is closest in time as the file_part_converted 
         string using the embedded timestamp data in the filenames.
@@ -120,14 +120,21 @@ class BasePreprocessor(Generic[T], abc.ABC):
         Expects input timestamp format of: YYYY-MM-DD_HH-MM-SS_ddddddd
         
         """
-
+        
+        # The pattern string should be added to the app .envand .env.production environment files
+        pattern = re.compile( r'(?P<date>\d{4}-\d{2}-\d{2})_(?P<time>\d{2}-\d{2}-\d{2})(?:_(?P<subsec>\d{6}))?' )
+        
         # Convert json list to tuples (datetime, filename)
-        json_times = [(self.extract_datetime(f), f) for f in json_files]
-
+        json_times = [(self.extract_datetime(f, pattern), f) for f in json_files]
+        
+        has_none = any(x is None for x in json_times)
+        if has_none:
+            return None
+        
         # Sort JSON files by time
         json_times.sort(key=lambda x: x[0])
 
-        file_part_time = self.extract_datetime(file_part_converted)
+        file_part_time = self.extract_datetime(file_part_converted, pattern)
         older_json = None
         for jt, jf in json_times:
             if jt < file_part_time:
@@ -138,12 +145,32 @@ class BasePreprocessor(Generic[T], abc.ABC):
         return older_json
         
                     
-    def extract_datetime(self, filename):
+    def extract_datetime(self, filename: str, pattern: re.Pattern) -> datetime | None:
         """
         Expects input timestamp format of: YYYY-MM-DD_HH-MM-SS_ddddddd
+        
+        pattern = re.compile(r'(?P<date>\d{4}-\d{2}-\d{2})_(?P<time>\d{2}-\d{2}-\d{2})(?:_(?P<subsec>\d{6}))?')
+        
         """
-        date_str = filename.split("_")[0] + "_" + filename.split("_")[1] + "." + filename.split("_")[2]
-        return datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S.%f")    
+
+        m = pattern.search(filename)
+        if not m:
+            raise ValueError(f"BasePreprocessor: extract_datetime: No date/time found")
+
+        date_str = m.group("date")        # "2025-11-13"
+        time_str = m.group("time")        # "14-05-33"
+        subsec   = m.group("subsec")      # "1234567" or None
+
+        date_str = date_str + '_' + time_str + '.' + subsec
+
+        # date_str = filename.split("_")[0] + "_" + filename.split("_")[1] + "." + filename.split("_")[2]
+        try:
+            resdate = datetime.strptime(date_str, "%Y-%m-%d_%H-%M-%S.%f")
+            return resdate
+        except ValueError as e:
+            shared_logger.error(f"BasePreprocessor: extract_datetime: {filename} — {e}")
+            return None
+             
         
     
     def extract_timestamp(self, filename: str, filestamp: str):

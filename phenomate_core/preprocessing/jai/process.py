@@ -20,7 +20,10 @@ from phenomate_core.preprocessing.base import BasePreprocessor
 from phenomate_core.preprocessing.jai import jai_pb2
 
 # shared_logger = logging.getLogger("celery")
-from celery.utils.log import get_task_logger
+# from celery.utils.log import get_task_logger
+# shared_logger = get_task_logger(__name__)
+
+from phenomate_core.get_version import get_task_logger
 shared_logger = get_task_logger(__name__)
 
 class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
@@ -223,12 +226,6 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         stream_params_files = [f for f in json_files if "stream_params" in f]
         device_params_files = [f for f in json_files if "device_params" in f]
 
-        # convert '_' to '.' decimal in the time seconds field
-        # parts = file_part.split("_", 3)  # Split into 4 parts max
-        # if len(parts)==4:
-            # file_part_converted = f"{parts[0]}_{parts[1]}.{parts[2]}_{parts[3]}" 
-        # else: 
-            # file_part_converted = f"{parts[0]}_{parts[1]}.{parts[2]}"
         res_match = self.return_closest_in_time(stream_params_files, file_part)  
         if res_match != None:            
             matched.append(res_match)

@@ -20,9 +20,7 @@ from turbojpeg import TurboJPEG
 from phenomate_core.preprocessing.base import BasePreprocessor
 from phenomate_core.preprocessing.oak_d import oak_pb2
 
-# import logging
-# shared_logger = logging.getLogger('celery')
-from celery.utils.log import get_task_logger
+from phenomate_core.get_version import get_task_logger
 shared_logger = get_task_logger(__name__)
 
 # Initialize TurboJPEG

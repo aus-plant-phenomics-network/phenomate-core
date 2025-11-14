@@ -18,9 +18,11 @@ __all__ = (
     "OakImuPacketsPreprocessor",
 )
 
+from phenomate_core.get_version import get_task_logger
+shared_logger = get_task_logger(__name__)
 
 def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
-    print(f"get_preprocessor called with sensor: {sensor}, details: {details}")
+    shared_logger.info(f"phenomate_core: get_preprocessor() called with sensor: {sensor}, details: {details}")
     match sensor.lower():
         case sensor if "jai" in sensor:
             return JaiPreprocessor

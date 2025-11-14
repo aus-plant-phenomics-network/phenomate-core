@@ -23,7 +23,8 @@ if TYPE_CHECKING:
 DEFAULT_WIDTH = 1024
 DEFAULT_HEIGHT = 224
 
-from celery.utils.log import get_task_logger
+
+from phenomate_core.get_version import get_task_logger
 shared_logger = get_task_logger(__name__)
 
 

@@ -1,4 +1,5 @@
 import logging
+from typing import Callable
 
 # from phenomate_core.get_logging import shared_logger
 shared_logger = logging.getLogger("celery")
@@ -28,3 +29,12 @@ def get_version() -> str:
         shared_logger.warning(f"Cannot get __version__ string: {e}")
 
     return ""
+
+
+def get_task_logger(name: str) -> logging.Logger:
+    try:
+        from celery.utils.log import get_task_logger as _gtl  # local import
+        get_celery_logger: Callable[[str], logging.Logger] = _gtl  # type: ignore[assignment]
+        return get_celery_logger(name)
+    except Exception:
+        return logging.getLogger(name)

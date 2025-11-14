@@ -21,15 +21,14 @@ from phenomate_core.preprocessing.lidar2d import lidar_pb2
 from  phenomate_core.preprocessing.lidar2d.sick_scan_api import ctypesCharArrayToString
 from  phenomate_core.preprocessing.lidar2d.reading_proto_buff import from_proto
 
+# This can be used to get parallel processing in the datatable library
+# It should be put in the .env and .env.production file
 dt.options.nthreads = 1 
 
-# from phenomate_core.get_logging import shared_logger
-import logging
-# shared_logger = logging.getLogger('celery')
-from celery.utils.log import get_task_logger
+from phenomate_core.get_version import get_task_logger
 shared_logger = get_task_logger(__name__)
-from phenomate_core.get_version import get_version
 
+from phenomate_core.get_version import get_version
 
 import psutil 
 
