@@ -17,7 +17,7 @@ sys.path.insert(0, Path.resolve(Path("../phenomate_core")))
 project = "phenomate_core"
 project_copyright = "2025, Australian Plant Phenomcs Network"
 author = "Hoang Son Le; Joshua Bowden"
-release = "0.3.0"
+release = "0.3.1"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

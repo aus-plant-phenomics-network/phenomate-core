@@ -28,6 +28,10 @@ def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
             return JaiPreprocessor
         case sensor if "hyper" in sensor:
             return HyperspecPreprocessor
+        case sensor if "white" in sensor:
+            return HyperspecPreprocessor
+        case sensor if "dark" in sensor:
+            return HyperspecPreprocessor
         case sensor if "oak" in sensor:
             if "calibration" in details:
                 return OakCalibrationPreprocessor

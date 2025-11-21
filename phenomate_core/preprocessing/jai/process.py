@@ -315,7 +315,7 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             compression_l = "none"  # lossless: lzma  zstd   compressionargs={'lossless': True} not available: bzip2 lz4 ; slow: jpeg2000, webp
 
             image_path_name_ext = fpath / self.get_output_name(
-                index=image.timestamp, ext="tiff", details=f"{compression_l}_tifffile"
+                index=image.timestamp, ext="tiff", details=""
             )
           
             try:
