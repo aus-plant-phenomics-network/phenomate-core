@@ -43,7 +43,7 @@ class BasePreprocessor(Generic[T], abc.ABC):
         return ext[1:] if ext.startswith(".") else ext
 
     def get_output_name(self, index: int | None, ext: str, details: str | None = None) -> str:
-        base = f"{self._base_name}_preproc"
+        base = f"{self._base_name}"
         if index is not None:
             base += f"-{index:020}"
         if details is not None:
@@ -149,8 +149,6 @@ class BasePreprocessor(Generic[T], abc.ABC):
         """
         Expects input timestamp format of: YYYY-MM-DD_HH-MM-SS_ddddddd
         
-        pattern = re.compile(r'(?P<date>\d{4}-\d{2}-\d{2})_(?P<time>\d{2}-\d{2}-\d{2})(?:_(?P<subsec>\d{6}))?')
-        
         """
 
         m = pattern.search(filename)
@@ -172,18 +170,24 @@ class BasePreprocessor(Generic[T], abc.ABC):
             return None
              
         
-    
-    def extract_timestamp(self, filename: str, filestamp: str):
-        # Match the pattern: YYYY-MM-DD_HH-MM-SS_milliseconds
-        match = re.match(filestamp, filename)
-        return match.group(0) if match else None
+    def extract_timestamp(self, filename: str, pattern : str):
+        # Extract the timestamp pattern from the filename
+        shared_logger.debug(f"BasePreprocessor: extract_timestamp(): matching expression = {pattern } ")
+        shared_logger.debug(f"BasePreprocessor: extract_timestamp(): filename = {filename} ")
+        match = re.search(pattern , filename)
+        shared_logger.info(f"BasePreprocessor: extract_timestamp(): match = {match} ")
+        if match: 
+            return match.group(1) 
+        else:
+            return None
 
     def match_timestamp(
         self,
         target_filename: str,
         list_of_filenames: list[str],
-        filestamp: str = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+",
+        filestamp: str = r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+)"
     ) -> list[str]:
+        
         target_timestamp = self.extract_timestamp(target_filename, filestamp)
         if not target_timestamp:
             return []

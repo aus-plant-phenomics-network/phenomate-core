@@ -270,7 +270,11 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         
         current_year = str(datetime.now(UTC).year)
         phenomate_version = get_version()
-        user = "Phenomate user"  # 315 Creator of the image
+        user = '''"creator": {
+"@type": "Organization",
+"name": "Australian Plant Phenomics Network",
+"identifier": "https://ror.org/02zj7b759"
+}'''  # 315 Creator of the image
         start_time = time.time()
         for index, image in enumerate(self.images):
             # Determine width and height
@@ -291,8 +295,8 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             tag_270 = '"A plant phenotype experiment image. Source image is JAI camera protobuffer object raw Bayer image. Output converted using OpenCV.cvtColor() and saved using the tifffile library"'
             tag_274 = tifffile.ORIENTATION.TOPLEFT  # ORIENTATION should be an integer value
             # tag_305 = # tifffile adds its own name here.
-            tag_306 = f"{tiff_date}"
-            tag_315 = f"{user}"
+            tag_306 = f'{tiff_date}'
+            tag_315 = f'{user}'
             tag_33432 = f'"Copyright {current_year} Australian Plant Phenomics Network. All rights reserved"'
             tag_65000 = '{ "timestamp_description": "system_timestamp"" : "The system timestamp that the image was added to the protocol buffer", "jai_collection_timestamp": "The JAI camera counter value when the image was taken" }'
             tag_65001 = f'{{ "system_timestamp": "{self.system_timestamps[index]}" }}'
@@ -315,7 +319,7 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             compression_l = "none"  # lossless: lzma  zstd   compressionargs={'lossless': True} not available: bzip2 lz4 ; slow: jpeg2000, webp
 
             image_path_name_ext = fpath / self.get_output_name(
-                index=image.timestamp, ext="tiff", details=""
+                index=image.timestamp, ext="tiff", details=None
             )
           
             try:
@@ -386,7 +390,11 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             tag_274 = "ORIENTATION.TOPLEFT"  # ORIENTATION should be an integer value
             tag_305 = f"phenomate-core version: {phenomate_version} using Python library PNG writer: {png_lib}, version {__version__}"
             tag_306 = f"{utc_now}"
-            user = "Phenomate user"  # 315 Creator of the image
+            user = '''"creator": {
+"@type": "Organization",
+"name": "Australian Plant Phenomics Network",
+"identifier": "https://ror.org/02zj7b759"
+}'''   # 315 Creator of the image
             tag_315 = f"{user}"
             tag_33432 = (
                 f"Copyright {current_year} Australian Plant Phenomics Network. All rights reserved."
@@ -465,7 +473,11 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             tag_274 = tifffile.ORIENTATION.TOPLEFT  # ORIENTATION should be an integer value
             tag_305 = f"phenomate-core version: {phenomate_version} written using Python library PIL version {__version__}"
             tag_306 = f"{tiff_date}"
-            user = "Phenomate user"  # 315 Creator of the image
+            user = '''"creator": {
+"@type": "Organization",
+"name": "Australian Plant Phenomics Network",
+"identifier": "https://ror.org/02zj7b759" 
+}'''   # 315 Creator of the image  # 315 Creator of the image
             tag_315 = f"{user}"
             tag_33432 = (
                 f"Copyright {current_year} Australian Plant Phenomics Network. All rights reserved"
