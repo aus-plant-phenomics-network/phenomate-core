@@ -87,7 +87,7 @@ class Ouster3dPreprocessor(BasePreprocessor[Path]):
         shared_logger.debug(f"Ouster3dPreprocessor: files_in_dir:  {files_in_dir}")
         
         # Set the timestamp regular expression
-        filestamp = r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+"  # defined in the Resonate processing when they save the files.
+        filestamp = r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_\d+)"  # defined in the Resonate processing when they save the files.
         # Match the filename timestamps to the input filename
         matched = self.match_timestamp(file_part, files_in_dir, filestamp)
         shared_logger.debug(f"Ouster3dPreprocessor: Matched files: {matched}")
