@@ -29,6 +29,18 @@ shared_logger = get_task_logger(__name__)
 
 
 class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
+    
+    def __init__(self, path: str | Path, in_ext: str = "bin", **kwargs: Any):
+        
+        # special cases for dark and white hyperspectral reference spectral
+        # as the filenames do not conform to the 'standard' Phenomate filename 
+        # e.g. they may end in '_ref_Hyperspec1.bin', not just '.bin'
+
+        if "_ref_hyperspec" in in_ext.lower():
+            in_ext = '.bin'
+              
+        super().__init__(path, in_ext)   # pass parameters up to Base
+    
     def extract(self, **kwargs: Any) -> None:
         with self.path.open("rb") as file:
             shared_logger.info(f"HyperspecPreprocessor.extract() filename:{str(self.path)}")
@@ -162,5 +174,6 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
     ) -> None:
         file_path = Path(path)
         file_path.mkdir(parents=True, exist_ok=True)
+        shared_logger.info(f"HyperspecPreprocessor.save() file_path:{str(file_path)}")
         self.write_to_csv_file(file_path)
         self.write_to_envi_file(file_path, width, height)
