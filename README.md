@@ -101,7 +101,7 @@ Use the tool as follows:
 1. make sure the current version in ```.bumpmyversion.toml``` is correct
 e.g.
 ```
-current_version = "0.3.1"
+current_version = "0.4.0"
 ```
 Set the bumpwhat value and run the ```bump-my-version``` command:
 ```
