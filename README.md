@@ -101,7 +101,7 @@ Use the tool as follows:
 1. make sure the current version in ```.bumpmyversion.toml``` is correct
 e.g.
 ```
-current_version = "0.4.0"
+current_version = "0.4.1"
 ```
 Set the bumpwhat value and run the ```bump-my-version``` command:
 ```
@@ -118,6 +118,17 @@ After a version update the package can be published to PyPi:
 rm -fr ./dist
 uv build
 uv publish # requires a token from PyPi - see .pypirc file
+```
+
+#### tag the release in git
+
+```
+git add --all
+git commit -m "Release version 0.4.1 - adds special processing for GNSS.csv files"
+git tag v0.4.1 -m "Release version 0.4.1 - adds special processing for GNSS.csv files"
+git push origin main
+git push origin v0.4.1
+
 ```
   
 Now setup the ```Phenomate``` project repository telling it about the new version -

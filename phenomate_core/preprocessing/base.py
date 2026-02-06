@@ -35,8 +35,10 @@ class BasePreprocessor(Generic[T], abc.ABC):
             raise ValueError(f"Not a file: {fpath!s}")
         self._path = fpath
         name = self.path.name
-        if not name.endswith("." + self._in_ext):
-            raise ValueError(f"Expects input file with ext: {self._in_ext}. Input: {name}")
+        # Special processing for IMUU GNSS files
+        if not name.endswith("_GNSS.csv"):
+            if not name.endswith("." + self._in_ext):
+                raise ValueError(f"Expects input file with ext: {self._in_ext}. Input: {name}")
         return name[: -len("." + self._in_ext)]
 
     def process_ext(self, ext: str) -> str:
