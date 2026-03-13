@@ -19,12 +19,10 @@ from phenomate_core.get_version import get_version
 from phenomate_core.preprocessing.base import BasePreprocessor
 from phenomate_core.preprocessing.jai import jai_pb2
 
-# shared_logger = logging.getLogger("celery")
-# from celery.utils.log import get_task_logger
-# shared_logger = get_task_logger(__name__)
 
 from phenomate_core.get_version import get_task_logger
 shared_logger = get_task_logger(__name__)
+
 
 class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
     r"""Average Timing  and compression results (per image for 17 images) extracted from
@@ -109,11 +107,28 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
       # "GPSLongitude": [118, 14, 55.32]
     # }
     """
-
+    import binascii
+    def decode_varint(self, b, start=0):
+        shift = 0
+        value = 0
+        i = start
+        while True:
+            byte = b[i]
+            value |= (byte & 0x7F) << shift
+            i += 1
+            if (byte & 0x80) == 0:
+                break
+            shift += 7
+        return value, i
+    
     def extract(self, **kwargs: Any) -> None:
-        
+
         dir_part = self.path.parent  # this is another Path type
         file_part = self.path.name  # this is a str
+        
+        for handler in shared_logger.handlers:
+            if isinstance(handler, logging.FileHandler):
+                print("Logging to:", handler.baseFilename)
         
         shared_logger.info(f"JaiPreprocessor.extract(): file_part: {file_part}")
         
@@ -145,9 +160,19 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
                     # Read the serialized message
                     serialized_image = file.read(length)
 
+                    # first_35 = serialized_image[:35]
+                    # print(f"JaiPreprocessor.extract(): First 35 bytes of serialized image: {first_35.hex()}")  # Log the first 35 bytes in hexadecimal format
+                    # raw = serialized_image
+                    # assert raw[0] == 0x0A  # field 1, length-delimited
+                    # length_dec, after = self.decode_varint(raw, 1)
+                    # print("serailized_image length:", length) 
+                    # print("Declared length        :", length_dec)  # should print 12417024
+                    # print("Available bytes        :", len(raw) - after)
+
                     # Parse the protobuf message
                     image_protobuf_obj = jai_pb2.JAIImage()
                     image_protobuf_obj.ParseFromString(serialized_image)
+                    # image_protobuf_obj.ListFields()  # This will trigger the parsing and can help identify issues with the protobuf message
 
                     # Update to extracted image list
                     self.images.append(image_protobuf_obj)
@@ -267,7 +292,6 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
         shared_logger.info(f"JaiPreprocessor.save() Copy file time (JAI data): {end_time - start_time:.4f} seconds")
         
         
-        
         current_year = str(datetime.now(UTC).year)
         phenomate_version = get_version()
         user = '''"creator": {
@@ -286,11 +310,8 @@ class JaiPreprocessor(BasePreprocessor[jai_pb2.JAIImage]):
             # rgb_image = cv2.cvtColor(bayer_image, cv2.COLOR_BayerRGGB2BGR)  # Use this if saving with cv2.imwrite
             rgb_image = cv2.cvtColor(bayer_image, cv2.COLOR_BayerRGGB2RGB)
 
-            # utc_now = datetime.now(UTC)
             tiff_date = datetime.now(UTC).strftime("%Y:%m:%d %H:%M:%S")
-            utc_datetime = datetime.fromtimestamp(image.timestamp / 1000000, tz=UTC)
-            # shared_logger.info(f"Converted timestamp (no compression): image.timestamp: {image.timestamp}  {utc_datetime}")
-
+            
             tag_269 = f'"title":"Phenomate JAI output",  "software": "phenomate-core {phenomate_version}", '
             tag_270 = '"A plant phenotype experiment image. Source image is JAI camera protobuffer object raw Bayer image. Output converted using OpenCV.cvtColor() and saved using the tifffile library"'
             tag_274 = tifffile.ORIENTATION.TOPLEFT  # ORIENTATION should be an integer value

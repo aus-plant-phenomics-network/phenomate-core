@@ -1,6 +1,6 @@
 [project]
 name = "phenomate-core"
-version = "0.4.1"
+version = "0.4.3"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -10,13 +10,13 @@ dependencies = [
     "opencv-python>=4.11.0.86",
     "pillow>=11.3.0",
     "protobuf>=6.31.1",
-    "pyturbojpeg",
+    "pyturbojpeg==1.8.2",
     "spectral>=0.24",
     "tifffile[all]>=2025.9.30",
 ]
 
-[tool.uv.sources]
-pyturbojpeg = { git = "https://github.com/lilohuang/PyTurboJPEG.git" }
+# [tool.uv.sources]
+# pyturbojpeg = { git = "https://github.com/lilohuang/PyTurboJPEG.git" }
 
 [dependency-groups]
 dev = [

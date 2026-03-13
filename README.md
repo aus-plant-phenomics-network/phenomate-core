@@ -6,7 +6,8 @@ The Phenomate platform collects data from the following sensors
 
 - JAI RGB camera
 - IMU - INS401
-- Lidar (2D)
+- Lidar (SickScan 2D)
+- Lidar (Ouster 3D)
 - Hyperspectral Camera
 
 And it packs the data (typically) into Protobuffer messages as the sensors collect it. This package unpacks and
@@ -101,7 +102,7 @@ Use the tool as follows:
 1. make sure the current version in ```.bumpmyversion.toml``` is correct
 e.g.
 ```
-current_version = "0.4.1"
+current_version = "3"
 ```
 Set the bumpwhat value and run the ```bump-my-version``` command:
 ```
@@ -109,6 +110,7 @@ Set the bumpwhat value and run the ```bump-my-version``` command:
 
 export bumpwhat=major | minor | patch
 uv run bump-my-version bump $bumpwhat
+uv lock # to update lock file 
 ```
 
 
@@ -124,10 +126,10 @@ uv publish # requires a token from PyPi - see .pypirc file
 
 ```
 git add --all
-git commit -m "Release version 0.4.1 - adds special processing for GNSS.csv files"
-git tag v0.4.1 -m "Release version 0.4.1 - adds special processing for GNSS.csv files"
+git commit -m "Release version 3 - adds special processing for GNSS.csv files"
+git tag v3 -m "Release version 3 - adds special processing for GNSS.csv files"
 git push origin main
-git push origin v0.4.1
+git push origin v3
 
 ```
   
@@ -153,7 +155,7 @@ docker compose up -d --force-recreate --build celery_worker
 
 If not installing using Docker, just reinstall the new package into the uv virtual environment:
 ```bash
-make install-local-phenomate-core  # this runs uv pip install ${LOCAL_APPM}
+make install-local-phenomate-core  # this runs uv pip install ${LOCAL_PHENOMATE_CORE}
 ```
 
 
