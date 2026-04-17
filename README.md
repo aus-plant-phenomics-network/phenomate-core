@@ -12,7 +12,9 @@ The Phenomate platform collects data from the following sensors
 
 And it packs the data (typically) into Protobuffer messages as the sensors collect it. This package unpacks and
 and possibly transforms the data from the protobuffer files, ready for further processing.
-
+  
+  
+Note on Version 0.4.4 - The new environment variable PHENOMATE_HYPERSPEC_ID has been added, which matches the hyperspec product ID - this is a fragile code change that can could have unforseen consequences on data integrity, and should be changed once the need for backwards compatibility is removed. See: `phenomate-core\phenomate_core\preprocessing\hyperspec\process.py`
 
 ## Installation
 
