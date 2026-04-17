@@ -7,6 +7,7 @@ it unpacks the data to 16-bit unsigned integer format.
 from __future__ import annotations
 
 import csv
+import os
 import struct
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -38,10 +39,15 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
 
         if "_ref_hyperspec" in in_ext.lower():
             in_ext = '.bin'
-              
+            
+        self.sensor_pn: list[int] = []
+        
         super().__init__(path, in_ext)   # pass parameters up to Base
     
     def extract(self, **kwargs: Any) -> None:
+        allowed_sensor_pns =  self.load_sensor_pn_allowlist()
+        # set this to true if the sensor ID in the file is in the list
+        first_run = True
         with self.path.open("rb") as file:
             shared_logger.info(f"HyperspecPreprocessor.extract() filename:{str(self.path)}")
             while True:
@@ -51,25 +57,66 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
                     break
                 system_timestamp = struct.unpack("d", serialized_timestamp)[0]
 
-                length_bytes = file.read(4)
-                if not length_bytes:
+                # The sensor_pn_bytes 4 byte value is only in Hyperspec files post April 2026
+                # It makes the file reader non-backwards compatible with the older 
+                # Hyperspec protobuf files, so, I have to do a hacky workaround 
+                sensor_matches = False  
+                sensor_pn_bytes = file.read(4)
+                if len(sensor_pn_bytes) == 4:
+                    sensor_pn_val = struct.unpack("<I", sensor_pn_bytes)[0]
+                    if sensor_pn_val in allowed_sensor_pns:
+                        self.sensor_pn.append(sensor_pn_val)
+                        sensor_matches = True
+                    else:
+                        length_bytes = sensor_pn_bytes
+                        self.sensor_pn.append(0)
+                        if first_run:
+                            shared_logger.warning(f"HyperspecPreprocessor.extract() The sensor ID found in the file ({sensor_pn_val}) is not in set of known Hyperspec instrument product numbers: {allowed_sensor_pns}. This may indicate an older version of the Hyperspec bin file, or, that the Hyperspec instrument has been changed. Please confirm if this is the case and set the PHENOMATE_HYPERSPEC_ID .env.production file variable to the new ID ({sensor_pn_val}).")
+                            first_run = False
+                else:
+                    shared_logger.warning(f"HyperspecPreprocessor.extract() The variable sensor_pn_bytes was not read")
                     break
-                length = int.from_bytes(length_bytes, byteorder="little")
+                
+                # Only read another 4 bytes if the sensor id matches
+                # as if so, then the file is a new file format .bin file.
+                # If the sensor ID does not match then we probably have 
+                # the length value (or the sensor ID has changed)
+                if sensor_matches:
+                    length_bytes = file.read(4)
+                    
+                if not length_bytes:
+                    shared_logger.warning(f"HyperspecPreprocessor.extract() The variable length_bytes was not read")
+                    break
 
+                length = int.from_bytes(length_bytes, byteorder="little")
+                
                 # Read the serialized message
                 serialized_image = file.read(length)
 
                 # Parse the protobuf message
                 image_protobuf_obj = hs_pb2.HyperSpecImage()
                 image_protobuf_obj.ParseFromString(serialized_image)
-
-                # amiga_timestamp = image_protobuf_obj.timestamp_info
-
+                
                 # # Convert the image data back to numpy.ndarray
                 self.images.append(image_protobuf_obj)
                 self.system_timestamps.append(system_timestamp)
                 
-        
+
+
+    def load_sensor_pn_allowlist(self, env_var: str = "PHENOMATE_HYPERSPEC_ID") -> set[int]:
+        """
+           This is needd as an Hyperspec instrument ID has been added to the 
+           conglomerated protobuf
+        """
+        raw = os.getenv(env_var, "3210798")
+        if not raw:
+            return set()
+
+        return {
+            int(value.strip())
+            for value in raw.split(",")
+            if value.strip()
+        }
         
     def matched_file_list(self, origin_path: Path, file_part : str) -> list[Path]:
         """
@@ -146,13 +193,14 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
             "blockid",
             "bandwidth",
             "image_timestamp",
+            "product_number",
         ]
         file_path = path / self.get_output_name(None, "csv")
         with file_path.open("w", encoding="utf-8") as csv_file:
             shared_logger.info(f"HyperspecPreprocessor.write_to_csv_file() filename:{str(file_path)}")
             writer = csv.writer(csv_file)
             writer.writerow(headers)
-            for system_timestamp, image in zip(self.system_timestamps, self.images, strict=False):
+            for index, (system_timestamp, image) in enumerate(zip(self.system_timestamps, self.images, strict=False)):
                 writer.writerow(
                     [
                         system_timestamp,
@@ -162,6 +210,7 @@ class HyperspecPreprocessor(BasePreprocessor[hs_pb2.HyperSpecImage]):
                         image.blockid,
                         image.bandwidth,
                         image.timestamp,
+                        self.sensor_pn[index],
                     ]
                 )
 

@@ -126,10 +126,10 @@ uv publish # requires a token from PyPi - see .pypirc file
 
 ```
 git add --all
-git commit -m "Release version 3 - adds special processing for GNSS.csv files"
-git tag v3 -m "Release version 3 - adds special processing for GNSS.csv files"
+git commit -m "Release version 0.4.3 - adds special processing for GNSS.csv files"
+git tag v0.4.3 -m "Release version 0.4.3 - adds special processing for GNSS.csv files"
 git push origin main
-git push origin v3
+git push origin v0.4.3
 
 ```
   
