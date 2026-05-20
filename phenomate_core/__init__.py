@@ -5,23 +5,17 @@ from phenomate_core.preprocessing.jai.process import JaiPreprocessor
 from phenomate_core.preprocessing.lidar2d.process import Lidar2DPreprocessor
 from phenomate_core.preprocessing.lidar3douster.process import Ouster3dPreprocessor 
 from phenomate_core.preprocessing.rs3basestation.process import RS3Preprocessor
-from phenomate_core.preprocessing.canbus.process import CanbusPreprocessor
-from phenomate_core.preprocessing.oak_d.process import (
-    OakCalibrationPreprocessor,
-    OakFramePreprocessor,
-    OakImuPacketsPreprocessor,
-)
+from phenomate_core.preprocessing.septentrio.process import SeptentrioPreprocessor
+from phenomate_core.preprocessing.capturesoftware.process import CaptureSoftwarePreprocessor
 
 __all__ = (
     "BasePreprocessor",
     "HyperspecPreprocessor",
     "JaiPreprocessor",
-    "OakCalibrationPreprocessor",
-    "OakFramePreprocessor",
-    "OakImuPacketsPreprocessor",
     "Ouster3dPreprocessor",
     "RS3Preprocessor",
-    "CanbusPreprocessor",
+    "SeptentrioPreprocessor",
+    "CaptureSoftwarePreprocessor"
 )
 
 from phenomate_core.get_version import get_task_logger
@@ -49,12 +43,6 @@ def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
             return HyperspecPreprocessor
         case sensor if "dark" in sensor:
             return HyperspecPreprocessor
-        case sensor if "oak" in sensor:
-            if "calibration" in details:
-                return OakCalibrationPreprocessor
-            if "imu" in details:
-                return OakImuPacketsPreprocessor
-            return OakFramePreprocessor
         case sensor if "imu" in sensor:
             return ImuPreprocessor
         case sensor if "ouster" in sensor:
@@ -63,7 +51,9 @@ def get_preprocessor(sensor: str, details: str = "") -> type[BasePreprocessor]:
             return Lidar2DPreprocessor
         case sensor if "rs3" in sensor:
             return RS3Preprocessor
-        case sensor if "canbus" in sensor:
-            return CanbusPreprocessor
+        case sensor if "septentrio" in sensor:
+            return SeptentrioPreprocessor
+        case sensor if "capturesoftware" in sensor:
+            return CaptureSoftwarePreprocessor 
             
     raise ValueError(f"Unsupported sensor type: {sensor}")

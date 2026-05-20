@@ -35,8 +35,15 @@ class BasePreprocessor(Generic[T], abc.ABC):
             raise ValueError(f"Not a file: {fpath!s}")
         self._path = fpath
         name = self.path.name
-        # Special processing for IMUU GNSS files
-        if not name.endswith("_GNSS.csv"):
+        # Special processing for IMUU GNSS files and Septentrio .bin files
+        if (
+              not name.endswith("_GNSS.csv")
+              and not name.endswith("_SBF_EXTMeas.bin")
+              and not name.endswith("_NMEA_1.bin")
+              and not name.endswith("_SBF_Rinex_NavData.bin")
+              and not name.endswith("_SBF_MeasEpoch.bin")
+              and not name.endswith("_SBF_INS.bin")
+        ):
             if not name.endswith("." + self._in_ext):
                 raise ValueError(f"Expects input file with ext: {self._in_ext}. Input: {name}")
         return name[: -len("." + self._in_ext)]
